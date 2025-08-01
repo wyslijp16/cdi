@@ -1,0 +1,56 @@
+# Fichier : admin/config.yml
+
+backend:
+  name: git-gateway
+  branch: main # Le nom de votre branche principale
+
+publish_mode: editorial_workflow
+
+media_folder: "static/img" # Le dossier où les images seront sauvegardées
+public_folder: "/img" # Le chemin public des images
+
+collections:
+  - name: "petitions"
+    label: "Pétitions"
+    folder: "_data/petitions"
+    create: true
+    slug: "{{fields.title | slugify}}"
+    fields:
+      - {label: "Titre", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text"}
+      - {label: "URL", name: "url", widget: "string"}
+      - {label: "Plateforme", name: "platform", widget: "string"}
+      - {label: "Lutte", name: "struggle", widget: "string"}
+
+  - name: "comptes_utiles"
+    label: "Comptes utiles"
+    folder: "_data/comptesUtiles"
+    create: true
+    slug: "{{fields.title | slugify}}"
+    fields:
+      - {label: "Titre", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text"}
+      - {label: "URL", name: "url", widget: "string"}
+      - {label: "Réseau social", name: "network", widget: "string"}
+
+  - name: "sites_utiles"
+    label: "Sites utiles"
+    folder: "_data/sitesUtiles"
+    create: true
+    slug: "{{fields.title | slugify}}"
+    fields:
+      - {label: "Titre", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text"}
+      - {label: "URL", name: "url", widget: "string"}
+      - {label: "Type", name: "type", widget: "string"}
+
+  - name: "ouvrages"
+    label: "Ouvrages"
+    folder: "_data/ouvrages"
+    create: true
+    slug: "{{fields.title | slugify}}"
+    fields:
+      - {label: "Titre", name: "title", widget: "string"}
+      - {label: "Description", name: "description", widget: "text"}
+      - {label: "URL", name: "url", widget: "string"}
+      - {label: "Éditeur", name: "publisher", widget: "string"}

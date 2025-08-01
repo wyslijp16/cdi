@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CDI de l'Ékip technique</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Police de caractères Inter -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
     <style>
         body {
@@ -27,16 +25,13 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- En-tête avec titre central -->
     <header class="bg-indigo-700 text-white p-6 shadow-lg rounded-b-xl mb-8">
         <h1 class="text-4xl font-bold text-center">CDI de l'Ékip technique</h1>
         <p class="mt-2 text-lg font-light text-center">Le centre de ressources pour les militantes et militants de LFI</p>
     </header>
 
-    <!-- Conteneur principal -->
     <main class="container mx-auto p-4 md:p-8">
 
-        <!-- Boutons de catégories -->
         <div class="flex flex-wrap justify-center gap-4 mb-8">
             <button id="btn-petitions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Pétitions</button>
             <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Comptes utiles</button>
@@ -44,22 +39,16 @@
             <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Ouvrages</button>
         </div>
 
-        <!-- Conteneur pour la recherche et les filtres -->
         <div id="controls-container" class="hidden">
-            <!-- Barre de recherche -->
             <div id="search-container" class="mb-4">
                 <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors">
             </div>
 
-            <!-- Menus déroulants de filtres -->
             <div id="filters-container" class="flex flex-wrap gap-4 mb-8">
-                <!-- Les groupes de filtres seront injectés ici par le JS -->
-            </div>
+                </div>
         </div>
 
-        <!-- Conteneur pour les cartes de contenu (une par ligne) -->
         <div id="content-container" class="grid grid-cols-1 gap-6">
-            <!-- Le contenu sera injecté ici par le JavaScript -->
             <div class="col-span-full text-center text-gray-500 text-xl mt-12">
                 <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
             </div>
@@ -67,9 +56,8 @@
 
     </main>
 
-    <!-- Pied de page -->
     <footer class="bg-indigo-900 text-white p-6 mt-8 rounded-t-xl text-center">
-        <p>&copy; 2024 Ékip technique. Tous droits réservés.</p>
+        <p>© 2024 Ékip technique. Tous droits réservés.</p>
     </footer>
 
     <script>
@@ -86,7 +74,8 @@
                 { title: "Interdiction des néonicotinoïdes", description: "Pétition pour protéger les abeilles et la biodiversité.", url: "https://www.change.org/neonicotinoides", platform: "Change.org", struggle: "Écologie" },
                 { title: "Droit à l'euthanasie", description: "Exigeons une loi pour le droit de choisir sa fin de vie.", url: "https://www.change.org/euthanasie", platform: "Change.org", struggle: "Social" }
             ],
-            comptesUtiles: [
+            // Changed key from comptesUtiles to "comptes-utiles"
+            "comptes-utiles": [ 
                 { title: "La France insoumise", description: "Le compte officiel du mouvement sur X (Twitter).", url: "https://twitter.com/lafranceinsoumise", network: "Twitter" },
                 { title: "Jean-Luc Mélenchon", description: "Le compte personnel de Jean-Luc Mélenchon sur X.", url: "https://twitter.com/JLMelenchon", network: "Twitter" },
                 { title: "LFI sur Facebook", description: "Suivez l'actualité du mouvement sur la page officielle.", url: "https://www.facebook.com/lafranceinsoumise", network: "Facebook" },
@@ -96,7 +85,8 @@
                 { title: "Révolution Permanente", description: "Média d'actualités et d'analyses politiques.", url: "https://twitter.com/RevPermanente", network: "Twitter" },
                 { title: "Thinkerview", description: "Chaîne YouTube pour des interviews approfondies.", url: "https://www.youtube.com/c/Thinkerview", network: "YouTube" }
             ],
-            sitesUtiles: [
+            // Changed key from sitesUtiles to "sites-utiles"
+            "sites-utiles": [ 
                 { title: "Le site officiel de LFI", description: "Accédez à toutes les informations, aux programmes et aux actualités.", url: "https://lafranceinsoumise.fr", type: "Site officiel" },
                 { title: "Le Blog de Jean-Luc Mélenchon", description: "Retrouvez les analyses et les tribunes du leader de LFI.", url: "https://melenchon.fr", type: "Blog personnel" },
                 { title: "L'insoumission.fr", description: "Le journal des insoumis pour une information alternative.", url: "https://linsoumission.fr", type: "Journal" },

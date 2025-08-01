@@ -9,9 +9,8 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Couleur de fond gris clair */
-            /* Ajoute un padding-top pour que le contenu ne soit pas caché sous le header flottant */
-            padding-top: 100px; /* Ajusté pour le header plus grand */
+            background-color: #f3f4f6;
+            padding-top: 100px;
         }
         .card {
             transition: transform 0.2s, box-shadow 0.2s;
@@ -21,18 +20,17 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         .active-button {
-            background-color: #4338ca; /* Indigo 700 */
+            background-color: #4338ca;
         }
-        /* Style pour la bulle flottante du header */
         .floating-header {
-            position: fixed; /* Rendre le header flottant */
-            top: 1.5rem; /* Distance par rapport au haut de la page, légèrement augmenté */
-            left: 50%; /* Commence au milieu horizontalement */
-            transform: translateX(-50%); /* Décale de 50% de sa propre largeur pour le centrer */
-            z-index: 1000; /* Assure qu'il est au-dessus des autres éléments */
-            min-width: 590px; /* Largeur minimale comme demandé */
-            max-width: 90%; /* Largeur maximale pour ne pas déborder sur les petits écrans */
-            text-align: center; /* Centre le texte à l'intérieur */
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            min-width: 590px;
+            max-width: 90%;
+            text-align: center;
         }
     </style>
 </head>
@@ -74,7 +72,6 @@
     </footer>
 
     <script>
-        // Données du site avec les propriétés pour les filtres multiples et plus d'exemples
         const contentData = {
             petitions: [
                 { title: "Pétition contre la réforme des retraites", description: "Soutenez la lutte contre la réforme des retraites et rejoignez le mouvement.", url: "https://www.petitions.com/reforme-retraites", platform: "Change.org", struggle: "Social" },
@@ -87,17 +84,17 @@
                 { title: "Interdiction des néonicotinoïdes", description: "Pétition pour protéger les abeilles et la biodiversité.", url: "https://www.change.org/neonicotinoides", platform: "Change.org", struggle: "Écologie" },
                 { title: "Droit à l'euthanasie", description: "Exigeons une loi pour le droit de choisir sa fin de vie.", url: "https://www.change.org/euthanasie", platform: "Change.org", struggle: "Social" }
             ],
-            "comptes-utiles": [ 
-                { title: "La France insoumise", description: "Le compte officiel du mouvement sur X (Twitter).", url: "https://twitter.com/lafranceinsoumise", network: "Twitter" },
+            "comptes-utiles": [
+                { title: "La France insoumise", description: "Le compte officiel du mouvement sur X (Twitter).", url: "https://twitter.com/FranceInsoumise", network: "Twitter" },
                 { title: "Jean-Luc Mélenchon", description: "Le compte personnel de Jean-Luc Mélenchon sur X.", url: "https://twitter.com/JLMelenchon", network: "Twitter" },
                 { title: "LFI sur Facebook", description: "Suivez l'actualité du mouvement sur la page officielle.", url: "https://www.facebook.com/lafranceinsoumise", network: "Facebook" },
-                { title: "Le Média TV", description: "La chaîne YouTube pour des analyses et des reportages engagés.", url: "https://www.youtube.com/c/LeMédia", network: "YouTube" },
+                { title: "Le Média TV", description: "La chaîne YouTube pour des analyses et des reportages engagés.", url: "https://www.youtube.com/@lemediatv", network: "YouTube" },
                 { title: "Avenir en Commun", description: "La page Facebook pour l'actualité et les événements du programme.", url: "https://www.facebook.com/avenir.en.commun", network: "Facebook" },
                 { title: "Taha Bouhafs", description: "Journaliste et militant engagé.", url: "https://twitter.com/tahabouhafs", network: "Twitter" },
                 { title: "Révolution Permanente", description: "Média d'actualités et d'analyses politiques.", url: "https://twitter.com/RevPermanente", network: "Twitter" },
-                { title: "Thinkerview", description: "Chaîne YouTube pour des interviews approfondies.", url: "https://www.youtube.com/c/Thinkerview", network: "YouTube" }
+                { title: "Thinkerview", description: "Chaîne YouTube pour des interviews approfondies.", url: "https://www.youtube.com/@ThinkerViews", network: "YouTube" }
             ],
-            "sites-utiles": [ 
+            "sites-utiles": [
                 { title: "Le site officiel de LFI", description: "Accédez à toutes les informations, aux programmes et aux actualités.", url: "https://lafranceinsoumise.fr", type: "Site officiel" },
                 { title: "Le Blog de Jean-Luc Mélenchon", description: "Retrouvez les analyses et les tribunes du leader de LFI.", url: "https://melenchon.fr", type: "Blog personnel" },
                 { title: "L'insoumission.fr", description: "Le journal des insoumis pour une information alternative.", url: "https://linsoumission.fr", type: "Journal" },
@@ -107,7 +104,7 @@
                 { title: "Mediapart", description: "Média d'investigation indépendant.", url: "https://www.mediapart.fr", type: "Journal" }
             ],
             ouvrages: [
-                { title: "L'Ère du peuple", description: "Livre de Jean-Luc Mélenchon analysant la crise politique actuelle.", url: "https://www.placedeslibraires.fr/livre/9782749925232-l-ere-du-peuple-jean-luc-melenchon/", publisher: "Éditions du Seuil" },
+                { title: "L'Ère du peuple", description: "Livre de Jean-Luc Mélenchon analysant la crise politique actuelle.", url: "https://www.placedeslibraires.fr/livre/9782749925327-l-ere-du-peuple-jean-luc-melenchon/", publisher: "Éditions du Seuil" },
                 { title: "Révolution", description: "Le programme complet de LFI pour la transformation de la société française.", url: "https://lafranceinsoumise.fr/programme/", publisher: "Éditions du Détour" },
                 { title: "Le Choix de l'insoumission", description: "Un recueil d'articles et d'analyses pour comprendre le mouvement.", url: "https://www.amazon.fr/choix-linsoumission-Jean-Luc-Melenchon/dp/2377221379", publisher: "Éditions du Seuil" },
                 { title: "La Gauche des faits", description: "Un ouvrage collectif pour déconstruire les mythes de l'économie néolibérale.", url: "https://www.placedeslibraires.fr/livre/9782707198188-la-gauche-des-faits-collectif/", publisher: "La Découverte" },
@@ -124,21 +121,18 @@
 
         let currentCategory = null;
 
-        // Fonction pour créer une carte de contenu avec une mise en page à deux colonnes
         function createCard(item, filterProperties) {
             const card = document.createElement('a');
             card.href = item.url;
-            card.target = "_blank"; // Ouvre le lien dans un nouvel onglet
+            card.target = "_blank";
             card.className = "card block bg-white rounded-lg shadow-md flex p-6";
 
-            // Stocker les propriétés de filtre sur la carte
             filterProperties.forEach(prop => {
                 if (item[prop]) {
                     card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
                 }
             });
 
-            // Contenu principal (titre et description)
             const mainContent = document.createElement('div');
             mainContent.className = "flex-1 pr-4";
             mainContent.innerHTML = `
@@ -147,12 +141,10 @@
             `;
             card.appendChild(mainContent);
 
-            // Séparateur vertical
             const separator = document.createElement('div');
             separator.className = "w-px bg-gray-200 h-auto mx-4";
             card.appendChild(separator);
 
-            // Caractéristiques (filtres)
             const characteristics = document.createElement('div');
             characteristics.className = "w-1/4 min-w-max text-right text-sm text-gray-500 flex-none";
             const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
@@ -166,7 +158,6 @@
             return card;
         }
 
-        // Fonction pour afficher une catégorie de contenu
         function renderCategory(categoryKey) {
             contentContainer.innerHTML = '';
             filtersContainer.innerHTML = '';
@@ -178,10 +169,8 @@
             const items = contentData[categoryKey];
             if (!items) return;
 
-            // Déterminer les propriétés de filtre pour la catégorie actuelle
             const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
             
-            // Créer les groupes de filtres avec des menus déroulants
             filterProperties.forEach(prop => {
                 const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
                 
@@ -198,13 +187,11 @@
                 filterSelect.setAttribute('data-filter-property', prop);
                 filterSelect.addEventListener('change', filterContent);
 
-                // Option "Tous"
                 const allOption = document.createElement('option');
                 allOption.value = 'all';
                 allOption.textContent = 'Tous';
                 filterSelect.appendChild(allOption);
 
-                // Options dynamiques
                 uniqueFilters.forEach(filterValue => {
                     const option = document.createElement('option');
                     option.value = filterValue.toLowerCase();
@@ -216,13 +203,11 @@
                 filtersContainer.appendChild(filterGroup);
             });
 
-            // Affichage initial de toutes les cartes
             items.forEach(item => {
                 contentContainer.appendChild(createCard(item, filterProperties));
             });
         }
 
-        // Fonction pour filtrer le contenu affiché
         function filterContent() {
             const searchTerm = searchInput.value.toLowerCase();
             const cards = contentContainer.querySelectorAll('.card');
@@ -255,12 +240,9 @@
             });
         }
 
-        // Ajout des gestionnaires d'événements aux boutons de catégorie
         categoryButtons.forEach(button => {
             button.addEventListener('click', () => {
-                // Supprime la classe 'active' de tous les boutons de catégorie
                 categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-                // Ajoute la classe 'active' au bouton cliqué
                 button.classList.add('active-button');
                 
                 const categoryKey = button.id.replace('btn-', '');
@@ -268,7 +250,6 @@
             });
         });
 
-        // Ajout du gestionnaire d'événement à la barre de recherche
         searchInput.addEventListener('keyup', filterContent);
     </script>
 </body>

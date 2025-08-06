@@ -61,9 +61,20 @@
   <script>
     let adminPass = "";
 
+    // Automatyczne logowanie jeśli hasło jest w localStorage
+    window.addEventListener('DOMContentLoaded', async () => {
+      const savedPass = localStorage.getItem('adminPass');
+      if (savedPass) {
+        adminPass = savedPass;
+        await fetchPropositions();
+        showAdminPanel();
+      }
+    });
+
     function showAdminPanel() {
       document.getElementById('login-panel').classList.add('hidden');
       document.getElementById('admin-panel').classList.remove('hidden');
+      addLogoutButton();
     }
 
     function showLoginPanel() {
@@ -105,6 +116,7 @@
 
     document.getElementById('login-btn').onclick = async () => {
       adminPass = document.getElementById('password').value;
+      localStorage.setItem('adminPass', adminPass); // zapisz hasło
       document.getElementById('login-message').textContent = "";
       await fetchPropositions();
       showAdminPanel();
@@ -117,11 +129,29 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, action: actionType, password: adminPass })
       });
-      await fetchPropositions(); // <-- odświeżenie listy po chaque action
+      await fetchPropositions();
       if (!res.ok) {
         document.getElementById('message').textContent = "Erreur lors de l'action.";
       }
     };
+
+    // Dodaj przycisk wylogowania i obsługę
+    function addLogoutButton() {
+      const panel = document.getElementById('admin-panel');
+      if (!document.getElementById('logout-btn')) {
+        const btn = document.createElement('button');
+        btn.id = 'logout-btn';
+        btn.className = 'mt-4 bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-400 transition-colors';
+        btn.textContent = 'Se déconnecter';
+        btn.onclick = () => {
+          localStorage.removeItem('adminPass');
+          adminPass = "";
+          document.getElementById('password').value = "";
+          showLoginPanel();
+        };
+        panel.appendChild(btn);
+      }
+    }
 
     // Pour revenir à la page de login si mot de passe incorrect
     document.getElementById('admin-panel').addEventListener('click', function(e) {
@@ -133,5 +163,4 @@
     });
   </script>
 </body>
-</html>
 </html>

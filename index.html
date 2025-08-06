@@ -459,28 +459,6 @@
         suggestionForm.addEventListener('submit', handleSuggestionSubmit);
         suggestionCategorySelect.addEventListener('change', generateSpecificFields);
 
-    </script>
-
-    <!-- Script d'importation de données Firestore (à exécuter une seule fois) -->
-    <script type="module">
-        // Importation des fonctions nécessaires depuis les SDK Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-        // Votre configuration Firebase (DOIT être la même que dans votre index.html)
-        const firebaseConfig = {
-            apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
-            authDomain: "cdi-lfi.firebaseapp.com",
-            projectId: "cdi-lfi",
-            storageBucket: "cdi-lfi.firebasestorage.app",
-            messagingSenderId: "626855610699",
-            appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
-            measurementId: "G-EMXFSRL9W0"
-        };
-
-        // Initialisation de Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
 
         // Vos données d'origine
         const contentData = {

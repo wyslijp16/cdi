@@ -1,65 +1,290 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>CDI de L'ékip Teknik</title>
-  <style>
-    body { font-family: sans-serif; max-width: 700px; margin: auto; background: #f7f7f7; padding: 20px; }
-    input, textarea, button { margin-bottom: 8px; padding: 6px; width: 100%; }
-    button { width: auto; }
-    hr { margin: 24px 0; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDI de L'ékip Teknik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            padding-top: 100px;
+        }
+        .card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .active-button {
+            background-color: #4338ca;
+        }
+        .floating-header {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            min-width: 590px;
+            max-width: 90%;
+            text-align: center;
+        }
+    </style>
 </head>
-<body>
-  <h1>Ressources validées</h1>
-  <ul id="ressources"></ul>
-  <hr />
-  <h2>Proposer une ressource</h2>
-  <form id="form">
-    <input name="titre" placeholder="Titre" required />
-    <textarea name="description" placeholder="Description" required></textarea>
-    <input name="lien" placeholder="Lien" required />
-    <button type="submit">Envoyer</button>
-  </form>
-  <div id="message"></div>
-  <hr />
-  <a href="/admin/">Panneau d'administration</a>
-  <script>
-    // Affiche les ressources validées
-    fetch('/api/ressources')
-      .then(res => res.json())
-      .then(data => {
-        const ul = document.getElementById('ressources');
-        ul.innerHTML = '';
-        data.forEach(r => {
-          const li = document.createElement('li');
-          li.innerHTML = `<a href="${r.lien}" target="_blank"><strong>${r.titre}</strong></a><br>${r.description}`;
-          ul.appendChild(li);
-        });
-      });
+<body class="text-gray-800">
 
-    // Proposer une ressource
-    document.getElementById('form').onsubmit = async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      const data = {
-        titre: form.titre.value,
-        description: form.description.value,
-        lien: form.lien.value
-      };
-      document.getElementById('message').textContent = "Envoi en cours...";
-      const res = await fetch('/api/proposer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (res.ok) {
-        document.getElementById('message').textContent = "Merci ! Proposition envoyée.";
-        form.reset();
-      } else {
-        document.getElementById('message').textContent = "Erreur lors de l'envoi.";
-      }
-    };
-  </script>
+    <header class="bg-indigo-700 text-white p-5 shadow-lg rounded-full floating-header transition-all duration-300 ease-in-out">
+        <h1 class="text-2xl font-bold">CDI de L'ékip Teknik</h1>
+        <p class="mt-2 text-base font-light hidden md:block">Le centre de ressources pour les militantes et militants de LFI</p>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <button id="btn-petitions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Pétitions</button>
+            <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Comptes utiles</button>
+            <button id="btn-sites-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Sites utiles</button>
+            <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Ouvrages</button>
+        </div>
+
+        <div class="flex justify-center mb-8">
+            <button id="btn-proposer" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-full shadow-lg hover:bg-green-700 transition-colors">Proposer une ressource</button>
+        </div>
+
+        <div id="controls-container" class="hidden">
+            <div id="search-container" class="mb-4">
+                <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors">
+            </div>
+            <div id="filters-container" class="flex flex-wrap gap-4 mb-8"></div>
+        </div>
+
+        <div id="content-container" class="grid grid-cols-1 gap-6">
+            <div class="col-span-full text-center text-gray-500 text-xl mt-12">
+                <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
+            </div>
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="/admin/" class="text-indigo-700 underline">Panneau d'administration</a>
+        </div>
+    </main>
+
+    <!-- Modal de proposition -->
+    <div id="modal-proposer" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-8 w-full max-w-md shadow-lg">
+            <h2 class="text-xl font-bold mb-4">Proposer une ressource</h2>
+            <form id="form-proposer">
+                <input name="titre" placeholder="Titre" required class="w-full mb-2 p-2 border rounded" />
+                <textarea name="description" placeholder="Description" required class="w-full mb-2 p-2 border rounded"></textarea>
+                <input name="lien" placeholder="Lien" required class="w-full mb-2 p-2 border rounded" />
+                <select name="categorie" required class="w-full mb-2 p-2 border rounded">
+                    <option value="">Catégorie</option>
+                    <option value="petitions">Pétitions</option>
+                    <option value="comptes-utiles">Comptes utiles</option>
+                    <option value="sites-utiles">Sites utiles</option>
+                    <option value="ouvrages">Ouvrages</option>
+                </select>
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Envoyer</button>
+                <button type="button" id="close-modal" class="ml-2 px-4 py-2 rounded border">Annuler</button>
+            </form>
+            <div id="proposer-message" class="mt-2 text-center"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- Gestion des catégories dynamiques ---
+        let ressources = {
+            petitions: [],
+            "comptes-utiles": [],
+            "sites-utiles": [],
+            ouvrages: []
+        };
+
+        // Charge les ressources validées depuis l'API
+        fetch('/api/ressources')
+            .then(res => res.json())
+            .then(data => {
+                ressources = { petitions: [], "comptes-utiles": [], "sites-utiles": [], ouvrages: [] };
+                data.forEach(item => {
+                    if (ressources[item.categorie]) ressources[item.categorie].push(item);
+                });
+            });
+
+        // --- Ton code de gestion des catégories, filtres, recherche ---
+        const contentContainer = document.getElementById('content-container');
+        const controlsContainer = document.getElementById('controls-container');
+        const searchInput = document.getElementById('search-input');
+        const filtersContainer = document.getElementById('filters-container');
+        const categoryButtons = document.querySelectorAll('.btn');
+
+        let currentCategory = null;
+
+        function createCard(item, filterProperties) {
+            const card = document.createElement('a');
+            card.href = item.lien || item.url;
+            card.target = "_blank";
+            card.className = "card block bg-white rounded-lg shadow-md flex p-6";
+
+            filterProperties.forEach(prop => {
+                if (item[prop]) {
+                    card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
+                }
+            });
+
+            const mainContent = document.createElement('div');
+            mainContent.className = "flex-1 pr-4";
+            mainContent.innerHTML = `
+                <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.titre || item.title}</h3>
+                <p class="text-gray-600">${item.description}</p>
+            `;
+            card.appendChild(mainContent);
+
+            const separator = document.createElement('div');
+            separator.className = "w-px bg-gray-200 h-auto mx-4";
+            card.appendChild(separator);
+
+            const characteristics = document.createElement('div');
+            characteristics.className = "w-1/4 min-w-max text-right text-sm text-gray-500 flex-none";
+            const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
+                <div>
+                    <span class="font-medium">${prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
+                </div>
+            `).join('');
+            characteristics.innerHTML = characteristicsHtml;
+            card.appendChild(characteristics);
+            
+            return card;
+        }
+
+        function renderCategory(categoryKey) {
+            contentContainer.innerHTML = '';
+            filtersContainer.innerHTML = '';
+            controlsContainer.classList.remove('hidden');
+            currentCategory = categoryKey;
+            
+            searchInput.value = '';
+
+            const items = ressources[categoryKey] || [];
+            if (!items.length) {
+                contentContainer.innerHTML = `<div class="col-span-full text-center text-gray-500 text-xl mt-12">
+                    <p>Aucune ressource dans cette catégorie.</p>
+                </div>`;
+                return;
+            }
+
+            const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
+            
+            filterProperties.forEach(prop => {
+                const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
+                
+                const filterGroup = document.createElement('div');
+                filterGroup.className = 'flex flex-col';
+                
+                const filterLabel = document.createElement('label');
+                filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
+                filterLabel.textContent = prop.charAt(0).toUpperCase() + prop.slice(1);
+                filterGroup.appendChild(filterLabel);
+                
+                const filterSelect = document.createElement('select');
+                filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
+                filterSelect.setAttribute('data-filter-property', prop);
+                filterSelect.addEventListener('change', filterContent);
+
+                const allOption = document.createElement('option');
+                allOption.value = 'all';
+                allOption.textContent = 'Tous';
+                filterSelect.appendChild(allOption);
+
+                uniqueFilters.forEach(filterValue => {
+                    const option = document.createElement('option');
+                    option.value = filterValue.toLowerCase();
+                    option.textContent = filterValue;
+                    filterSelect.appendChild(option);
+                });
+
+                filterGroup.appendChild(filterSelect);
+                filtersContainer.appendChild(filterGroup);
+            });
+
+            items.forEach(item => {
+                contentContainer.appendChild(createCard(item, filterProperties));
+            });
+        }
+
+        function filterContent() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const cards = contentContainer.querySelectorAll('.card');
+            const filterSelects = filtersContainer.querySelectorAll('select');
+            
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+                
+                let matchesFilters = true;
+                filterSelects.forEach(select => {
+                    const prop = select.getAttribute('data-filter-property');
+                    const filterValue = select.value;
+
+                    if (filterValue !== 'all') {
+                        const cardFilterValue = card.getAttribute(`data-${prop}`);
+                        if (!cardFilterValue || cardFilterValue !== filterValue) {
+                            matchesFilters = false;
+                        }
+                    }
+                });
+                
+                if (matchesSearch && matchesFilters) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                categoryButtons.forEach(btn => btn.classList.remove('active-button'));
+                button.classList.add('active-button');
+                
+                const categoryKey = button.id.replace('btn-', '');
+                renderCategory(categoryKey);
+            });
+        });
+
+        searchInput.addEventListener('keyup', filterContent);
+
+        // --- Modal proposer une ressource ---
+        const modal = document.getElementById('modal-proposer');
+        document.getElementById('btn-proposer').onclick = () => { modal.classList.remove('hidden'); };
+        document.getElementById('close-modal').onclick = () => { modal.classList.add('hidden'); document.getElementById('proposer-message').textContent = ""; };
+
+        document.getElementById('form-proposer').onsubmit = async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                titre: form.titre.value,
+                description: form.description.value,
+                lien: form.lien.value,
+                categorie: form.categorie.value
+            };
+            document.getElementById('proposer-message').textContent = "Envoi en cours...";
+            const res = await fetch('/api/proposer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                document.getElementById('proposer-message').textContent = "Merci ! Proposition envoyée.";
+                form.reset();
+            } else {
+                document.getElementById('proposer-message').textContent = "Erreur lors de l'envoi.";
+            }
+        };
+    </script>
 </body>
 </html>

@@ -22,6 +22,12 @@
             gap: 0.75rem;
             position: relative; /* Pour positionner le message */
             overflow: hidden; /* Pour que le message ne déborde pas pendant l'animation */
+            /* Nouvelle transition pour la carte elle-même */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .pending-card.fade-out {
+            opacity: 0;
+            transform: translateY(-20px); /* Ajoute un léger mouvement vers le haut */
         }
         .pending-card h3 {
             font-weight: 600;
@@ -69,13 +75,13 @@
             font-size: 1.5rem;
             font-weight: bold;
             color: white;
-            opacity: 0;
-            transition: opacity 0.5s ease-out;
+            opacity: 0; /* Commence caché */
+            transition: opacity 0.3s ease-in; /* Transition rapide pour l'apparition */
             pointer-events: none; /* Permet de cliquer à travers le message */
             z-index: 10;
         }
         .card-message-area.show {
-            opacity: 1;
+            opacity: 1; /* Apparaît */
         }
         .card-message-area.success {
             background-color: rgba(16, 185, 129, 0.9); /* emerald-500 avec opacité */
@@ -143,25 +149,38 @@
         };
 
         /**
-         * Affiche un message directement sur une carte et le fait disparaître.
+         * Affiche un message directement sur une carte et le fait disparaître progressivement avec la carte.
          * @param {HTMLElement} cardElement - L'élément de la carte sur laquelle afficher le message.
          * @param {string} message - Le message à afficher.
          * @param {string} type - Le type de message ('success' ou 'error').
+         * @param {Function} onAnimationCompleteCallback - Callback à exécuter une fois l'animation terminée.
          */
-        function showCardMessage(cardElement, message, type) {
+        function showCardMessage(cardElement, message, type, onAnimationCompleteCallback) {
             const messageArea = cardElement.querySelector('.card-message-area');
             if (messageArea) {
                 messageArea.textContent = message;
                 messageArea.className = `card-message-area show ${type}`; // Ajoute les classes pour afficher et styliser
-                
-                // Fait disparaître la carte après un délai pour l'animation
+
+                // Après un court délai, commence à faire disparaître la carte entière
                 setTimeout(() => {
-                    messageArea.classList.remove('show');
-                    // Supprime la carte du DOM après la fin de l'animation de fondu
-                    setTimeout(() => {
-                        cardElement.remove();
-                    }, 500); // Correspond à la durée de transition CSS
-                }, 1000); // Affiche le message pendant 1 seconde avant de commencer à disparaître
+                    cardElement.classList.add('fade-out'); // Ajoute la classe pour l'animation de fondu de la carte
+                    // Force un reflow pour s'assurer que la transition est appliquée
+                    void cardElement.offsetHeight; 
+
+                    // Supprime la carte du DOM après la fin de son animation de transition
+                    cardElement.addEventListener('transitionend', function handler(event) {
+                        // S'assure que l'événement de transition est bien celui de l'opacité de la carte
+                        if (event.propertyName === 'opacity') {
+                            cardElement.removeEventListener('transitionend', handler); // Nettoie l'écouteur
+                            // Exécute le callback (qui contient l'opération Firestore)
+                            if (onAnimationCompleteCallback && typeof onAnimationCompleteCallback === 'function') {
+                                onAnimationCompleteCallback();
+                            }
+                            // La carte sera retirée du DOM par l'écouteur onSnapshot de Firestore
+                            // une fois que l'opération de suppression Firestore est terminée.
+                        }
+                    });
+                }, 1000); // Le message est visible pendant 1 seconde, puis la carte commence à disparaître
             }
         }
 
@@ -226,33 +245,38 @@
          * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
          */
         async function handleValidateSuggestion(suggestionId, suggestionData, cardElement) {
-            try {
-                // Crée un objet pour les données de la ressource validée
-                const resourceData = {
-                    title: suggestionData.title,
-                    description: suggestionData.description,
-                    url: suggestionData.url,
-                    category: suggestionData.category
-                };
+            // Fonction à exécuter après l'animation de la carte
+            const onAnimationComplete = async () => {
+                try {
+                    // Crée un objet pour les données de la ressource validée
+                    const resourceData = {
+                        title: suggestionData.title,
+                        description: suggestionData.description,
+                        url: suggestionData.url,
+                        category: suggestionData.category
+                    };
 
-                // Ajoute les champs spécifiques si présents
-                const specificFields = categorySpecificFields[suggestionData.category];
-                if (specificFields) {
-                    specificFields.forEach(field => {
-                        // Utilise field.id directement car ce sont les clés dans suggestionData
-                        if (suggestionData[field.id]) { 
-                            resourceData[field.id] = suggestionData[field.id];
-                        }
-                    });
+                    // Ajoute les champs spécifiques si présents
+                    const specificFields = categorySpecificFields[suggestionData.category];
+                    if (specificFields) {
+                        specificFields.forEach(field => {
+                            if (suggestionData[field.id]) { 
+                                resourceData[field.id] = suggestionData[field.id];
+                            }
+                        });
+                    }
+                    
+                    await addDoc(collection(db, 'resources'), resourceData);
+                    await deleteDoc(doc(db, 'suggestions', suggestionId));
+                    // La carte sera retirée du DOM par l'écouteur onSnapshot
+                } catch (e) {
+                    console.error("Error validating suggestion after animation: ", e);
+                    // Si l'opération Firestore échoue APRÈS l'animation, vous pourriez vouloir un autre mécanisme de notification
                 }
-                
-                await addDoc(collection(db, 'resources'), resourceData);
-                await deleteDoc(doc(db, 'suggestions', suggestionId));
-                showCardMessage(cardElement, 'Validée !', 'success');
-            } catch (e) {
-                console.error("Error validating suggestion: ", e);
-                showCardMessage(cardElement, 'Erreur !', 'error');
-            }
+            };
+
+            // Déclenche l'animation et passe la fonction Firestore en callback
+            showCardMessage(cardElement, 'Validée !', 'success', onAnimationComplete);
         }
 
         /**
@@ -261,13 +285,19 @@
          * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
          */
         async function handleRejectSuggestion(suggestionId, cardElement) {
-            try {
-                await deleteDoc(doc(db, 'suggestions', suggestionId));
-                showCardMessage(cardElement, 'Refusée !', 'error');
-            } catch (e) {
-                console.error("Error rejecting suggestion: ", e);
-                showCardMessage(cardElement, 'Erreur !', 'error');
-            }
+            // Fonction à exécuter après l'animation de la carte
+            const onAnimationComplete = async () => {
+                try {
+                    await deleteDoc(doc(db, 'suggestions', suggestionId));
+                    // La carte sera retirée du DOM par l'écouteur onSnapshot
+                } catch (e) {
+                    console.error("Error rejecting suggestion after animation: ", e);
+                    // Si l'opération Firestore échoue APRÈS l'animation, vous pourriez vouloir un autre mécanisme de notification
+                }
+            };
+
+            // Déclenche l'animation et passe la fonction Firestore en callback
+            showCardMessage(cardElement, 'Refusée !', 'error', onAnimationComplete);
         }
 
         // Charge les propositions en attente au chargement de la page

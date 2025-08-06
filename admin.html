@@ -10,9 +10,19 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
-            padding-top: 50px; /* Moins de padding car pas de header flottant ici */
+            padding-top: 50px;
         }
-        .pending-card {
+        .section-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .section-buttons .active-section-button {
+            background-color: #4338ca; /* indigo-700 */
+        }
+        .pending-card, .resource-card {
             background-color: #fff;
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -20,45 +30,45 @@
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
-            position: relative; /* Pour positionner le message */
-            overflow: hidden; /* Pour que le message ne déborde pas pendant l'animation */
-            /* Nouvelle transition pour la carte elle-même */
+            position: relative;
+            overflow: hidden;
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
-        .pending-card.fade-out {
+        .pending-card.fade-out, .resource-card.fade-out {
             opacity: 0;
-            transform: translateY(-20px); /* Ajoute un léger mouvement vers le haut */
+            transform: translateY(-20px);
         }
-        .pending-card h3 {
+        .pending-card h3, .resource-card h3 {
             font-weight: 600;
             color: #4338ca;
             font-size: 1.25rem;
         }
-        .pending-card p {
+        .pending-card p, .resource-card p {
             color: #4b5563;
         }
-        .pending-card .actions {
+        .pending-card .actions, .resource-card .actions {
             display: flex;
+            flex-wrap: wrap; /* Permet aux boutons de passer à la ligne */
             gap: 0.5rem;
             margin-top: 1rem;
         }
-        .pending-card .actions button {
+        .pending-card .actions button, .resource-card .actions button {
             padding: 0.75rem 1.5rem;
-            border-radius: 9999px; /* rounded-full */
+            border-radius: 9999px;
             font-weight: 600;
             color: white;
             transition: background-color 0.2s;
         }
-        .pending-card .actions .btn-validate {
+        .pending-card .actions .btn-validate, .resource-card .actions .btn-edit {
             background-color: #10b981; /* emerald-500 */
         }
-        .pending-card .actions .btn-validate:hover {
+        .pending-card .actions .btn-validate:hover, .resource-card .actions .btn-edit:hover {
             background-color: #059669; /* emerald-600 */
         }
-        .pending-card .actions .btn-reject {
+        .pending-card .actions .btn-reject, .resource-card .actions .btn-delete {
             background-color: #ef4444; /* red-500 */
         }
-        .pending-card .actions .btn-reject:hover {
+        .pending-card .actions .btn-reject:hover, .resource-card .actions .btn-delete:hover {
             background-color: #dc2626; /* red-600 */
         }
 
@@ -75,19 +85,117 @@
             font-size: 1.5rem;
             font-weight: bold;
             color: white;
-            opacity: 0; /* Commence caché */
-            transition: opacity 0.3s ease-in; /* Transition rapide pour l'apparition */
-            pointer-events: none; /* Permet de cliquer à travers le message */
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+            pointer-events: none;
             z-index: 10;
         }
         .card-message-area.show {
-            opacity: 1; /* Apparaît */
+            opacity: 1;
         }
         .card-message-area.success {
-            background-color: rgba(16, 185, 129, 0.9); /* emerald-500 avec opacité */
+            background-color: rgba(16, 185, 129, 0.9);
         }
         .card-message-area.error {
-            background-color: rgba(239, 68, 68, 0.9); /* red-500 avec opacité */
+            background-color: rgba(239, 68, 68, 0.9);
+        }
+
+        /* Styles pour le modal d'édition */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            visibility: hidden;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-out;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4b5563;
+        }
+        .modal-close-button:hover {
+            color: #1f2937;
+        }
+        .modal-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        .modal-form-group input, .modal-form-group textarea, .modal-form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+        .modal-form-group input:focus, .modal-form-group textarea:focus, .modal-form-group select:focus {
+            outline: none;
+            border-color: #4338ca;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .modal-buttons .btn-save {
+            background-color: #2563eb; /* blue-600 */
+        }
+        .modal-buttons .btn-save:hover {
+            background-color: #1d4ed8; /* blue-700 */
+        }
+        .modal-buttons .btn-cancel {
+            background-color: #6b7280; /* gray-500 */
+        }
+        .modal-buttons .btn-cancel:hover {
+            background-color: #4b5563; /* gray-600 */
+        }
+        .modal-buttons .btn-delete-resource {
+            background-color: #ef4444; /* red-500 */
+            margin-right: auto; /* Aligne à gauche */
+        }
+        .modal-buttons .btn-delete-resource:hover {
+            background-color: #dc2626; /* red-600 */
         }
     </style>
 </head>
@@ -96,9 +204,65 @@
     <main class="container mx-auto p-4 md:p-8">
         <h1 class="text-3xl font-bold text-center mb-8 text-indigo-700">Panneau d'Administration CDI</h1>
 
-        <h2 class="text-2xl font-bold text-center mb-6">Propositions en attente de validation</h2>
-        <div id="pending-suggestions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>
+        <div class="flex flex-wrap justify-center gap-4 mb-8 section-buttons">
+            <button id="btn-show-pending" class="bg-indigo-600 active-section-button">Propositions en attente</button>
+            <button id="btn-show-manage" class="bg-indigo-600">Gérer les ressources existantes</button>
+        </div>
+
+        <!-- Section des propositions en attente -->
+        <div id="pending-suggestions-section">
+            <h2 class="text-2xl font-bold text-center mb-6">Propositions en attente de validation</h2>
+            <div id="pending-suggestions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>
+            </div>
+        </div>
+
+        <!-- Section de gestion des ressources existantes (initialement cachée) -->
+        <div id="manage-resources-section" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-6">Gérer les ressources existantes</h2>
+            <div id="resources-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>
+            </div>
+        </div>
+
+        <!-- Modal d'édition de ressource (initialement caché) -->
+        <div id="edit-resource-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close-button" id="close-modal-button">&times;</button>
+                <h3 class="text-xl font-bold mb-4 text-center text-indigo-700">Modifier la ressource</h3>
+                <form id="edit-resource-form">
+                    <input type="hidden" id="edit-resource-id">
+                    <div class="modal-form-group">
+                        <label for="edit-title">Titre</label>
+                        <input type="text" id="edit-title" required>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="edit-description">Description</label>
+                        <textarea id="edit-description" rows="3" required></textarea>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="edit-url">URL</label>
+                        <input type="url" id="edit-url" required>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="edit-category">Catégorie</label>
+                        <select id="edit-category" required>
+                            <option value="petitions">Pétition</option>
+                            <option value="comptes-utiles">Compte utile</option>
+                            <option value="sites-utiles">Site utile</option>
+                            <option value="ouvrages">Ouvrage</option>
+                        </select>
+                    </div>
+                    <!-- Champs spécifiques pour l'édition (générés dynamiquement) -->
+                    <div id="edit-specific-fields"></div>
+
+                    <div class="modal-buttons">
+                        <button type="button" id="delete-resource-button" class="btn-delete-resource">Supprimer la ressource</button>
+                        <button type="button" id="cancel-edit-button" class="btn-cancel">Annuler</button>
+                        <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
     </main>
@@ -106,7 +270,7 @@
     <script type="module">
         // Importation des fonctions nécessaires depuis les SDK Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
         // Votre configuration Firebase (DOIT être la même que dans votre index.html)
@@ -125,13 +289,31 @@
         const db = getFirestore(app);
         const analytics = getAnalytics(app); // Analytics est initialisé mais non utilisé activement dans ce script
 
-        // Références aux éléments DOM spécifiques au panneau admin
+        // Références aux éléments DOM
+        const btnShowPending = document.getElementById('btn-show-pending');
+        const btnShowManage = document.getElementById('btn-show-manage');
+        const pendingSuggestionsSection = document.getElementById('pending-suggestions-section');
+        const manageResourcesSection = document.getElementById('manage-resources-section');
         const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
+        const resourcesList = document.getElementById('resources-list'); // Nouvelle liste pour les ressources
+        const editResourceModal = document.getElementById('edit-resource-modal');
+        const editResourceForm = document.getElementById('edit-resource-form');
+        const closeEditModalButton = document.getElementById('close-modal-button');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+        const deleteResourceButton = document.getElementById('delete-resource-button'); // Bouton supprimer dans le modal
 
-        let unsubscribeAdminSnapshot = null; // Stocke la fonction de désabonnement de l'écouteur Firestore pour les suggestions
+        // Champs du formulaire d'édition
+        const editResourceId = document.getElementById('edit-resource-id');
+        const editTitle = document.getElementById('edit-title');
+        const editDescription = document.getElementById('edit-description');
+        const editUrl = document.getElementById('edit-url');
+        const editCategory = document.getElementById('edit-category');
+        const editSpecificFieldsContainer = document.getElementById('edit-specific-fields');
 
-        // Définition des champs spécifiques pour chaque catégorie du formulaire de proposition
-        // Nécessaire ici pour savoir quels champs spécifiques copier lors de la validation
+        let unsubscribePendingSnapshot = null; // Écouteur pour les suggestions en attente
+        let unsubscribeResourcesSnapshot = null; // Écouteur pour les ressources existantes
+
+        // Définition des champs spécifiques pour chaque catégorie (pour les formulaires de proposition et d'édition)
         const categorySpecificFields = {
             'petitions': [
                 { id: 'platform', label: 'Plateforme', type: 'text', placeholder: 'Ex: petitions.assemblee-nationale.fr' },
@@ -159,28 +341,57 @@
             const messageArea = cardElement.querySelector('.card-message-area');
             if (messageArea) {
                 messageArea.textContent = message;
-                messageArea.className = `card-message-area show ${type}`; // Ajoute les classes pour afficher et styliser
+                messageArea.className = `card-message-area show ${type}`;
+                
+                // Désactiver les boutons d'action pendant l'animation
+                const actionButtons = cardElement.querySelectorAll('.actions button');
+                actionButtons.forEach(button => button.disabled = true);
 
-                // Après un court délai, commence à faire disparaître la carte entière
                 setTimeout(() => {
-                    cardElement.classList.add('fade-out'); // Ajoute la classe pour l'animation de fondu de la carte
-                    // Force un reflow pour s'assurer que la transition est appliquée
+                    cardElement.classList.add('fade-out');
                     void cardElement.offsetHeight; 
 
-                    // Supprime la carte du DOM après la fin de son animation de transition
                     cardElement.addEventListener('transitionend', function handler(event) {
-                        // S'assure que l'événement de transition est bien celui de l'opacité de la carte
                         if (event.propertyName === 'opacity') {
-                            cardElement.removeEventListener('transitionend', handler); // Nettoie l'écouteur
-                            // Exécute le callback (qui contient l'opération Firestore)
+                            cardElement.removeEventListener('transitionend', handler);
                             if (onAnimationCompleteCallback && typeof onAnimationCompleteCallback === 'function') {
                                 onAnimationCompleteCallback();
                             }
                             // La carte sera retirée du DOM par l'écouteur onSnapshot de Firestore
-                            // une fois que l'opération de suppression Firestore est terminée.
                         }
                     });
-                }, 1000); // Le message est visible pendant 1 seconde, puis la carte commence à disparaître
+                }, 1000);
+            }
+        }
+
+        /**
+         * Affiche la section spécifiée et cache les autres.
+         * Gère les écouteurs Firestore pour la section active.
+         * @param {string} sectionId - L'ID de la section à afficher ('pending' ou 'manage').
+         */
+        function showSection(sectionId) {
+            // Désabonne tous les écouteurs de snapshot précédents
+            if (unsubscribePendingSnapshot) unsubscribePendingSnapshot();
+            if (unsubscribeResourcesSnapshot) unsubscribeResourcesSnapshot();
+
+            // Cache toutes les sections
+            pendingSuggestionsSection.classList.add('hidden');
+            manageResourcesSection.classList.add('hidden');
+            editResourceModal.classList.remove('show'); // S'assurer que le modal est caché
+            
+            // Met à jour les classes des boutons de navigation
+            btnShowPending.classList.remove('active-section-button');
+            btnShowManage.classList.remove('active-section-button');
+
+            // Affiche la section correcte et active le bouton correspondant
+            if (sectionId === 'pending') {
+                pendingSuggestionsSection.classList.remove('hidden');
+                btnShowPending.classList.add('active-section-button');
+                loadPendingSuggestions();
+            } else if (sectionId === 'manage') {
+                manageResourcesSection.classList.remove('hidden');
+                btnShowManage.classList.add('active-section-button');
+                loadAndManageResources();
             }
         }
 
@@ -190,12 +401,8 @@
         function loadPendingSuggestions() {
             pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>';
 
-            // Se désabonne de l'écouteur précédent s'il existe
-            if (unsubscribeAdminSnapshot) unsubscribeAdminSnapshot();
-
-            // Écoute les changements en temps réel dans la collection 'suggestions'
-            unsubscribeAdminSnapshot = onSnapshot(collection(db, 'suggestions'), (querySnapshot) => {
-                pendingSuggestionsList.innerHTML = ''; // Efface le message de chargement
+            unsubscribePendingSnapshot = onSnapshot(collection(db, 'suggestions'), (querySnapshot) => {
+                pendingSuggestionsList.innerHTML = '';
 
                 if (querySnapshot.empty) {
                     pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune proposition en attente pour le moment.</p>';
@@ -206,12 +413,10 @@
                     const suggestion = docSnap.data();
                     const suggestionId = docSnap.id;
 
-                    // Crée la carte de suggestion
                     const card = document.createElement('div');
                     card.className = 'pending-card';
-                    card.setAttribute('data-id', suggestionId); // Ajoute l'ID pour un accès facile
+                    card.setAttribute('data-id', suggestionId);
 
-                    // Construit le HTML de la carte
                     card.innerHTML = `
                         <h3 class="text-indigo-800">${suggestion.title}</h3>
                         <p class="text-gray-600">${suggestion.description}</p>
@@ -224,11 +429,10 @@
                             <button class="btn-validate" data-id="${suggestionId}">Valider</button>
                             <button class="btn-reject" data-id="${suggestionId}">Refuser</button>
                         </div>
-                        <div class="card-message-area"></div> <!-- Zone pour le message de la carte -->
+                        <div class="card-message-area"></div>
                     `;
                     pendingSuggestionsList.appendChild(card);
 
-                    // Ajoute les écouteurs d'événements aux boutons de validation/rejet
                     card.querySelector('.btn-validate').addEventListener('click', () => handleValidateSuggestion(suggestionId, suggestion, card));
                     card.querySelector('.btn-reject').addEventListener('click', () => handleRejectSuggestion(suggestionId, card));
                 });
@@ -236,6 +440,131 @@
                 console.error("Error loading pending suggestions: ", error);
                 pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des propositions. Vérifiez les règles de sécurité Firestore.</p>';
             });
+        }
+
+        /**
+         * Charge et affiche les ressources existantes de la collection 'resources'.
+         */
+        function loadAndManageResources() {
+            resourcesList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>';
+
+            unsubscribeResourcesSnapshot = onSnapshot(collection(db, 'resources'), (querySnapshot) => {
+                resourcesList.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    resourcesList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune ressource existante pour le moment.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const resource = docSnap.data();
+                    const resourceId = docSnap.id;
+
+                    const card = document.createElement('div');
+                    card.className = 'resource-card';
+                    card.setAttribute('data-id', resourceId);
+
+                    // Détermine les propriétés à afficher pour la ressource
+                    const displayProperties = Object.keys(resource).filter(key => 
+                        ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key)
+                    );
+
+                    card.innerHTML = `
+                        <h3 class="text-indigo-800">${resource.title}</h3>
+                        <p class="text-gray-600">${resource.description}</p>
+                        <p class="text-gray-500 text-sm"><strong>URL:</strong> <a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.url}</a></p>
+                        <p class="text-gray-500 text-sm"><strong>Catégorie:</strong> ${resource.category}</p>
+                        ${displayProperties.map(key => `
+                            <p class="text-gray-500 text-sm"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${resource[key]}</p>
+                        `).join('')}
+                        <div class="actions">
+                            <button class="btn-edit" data-id="${resourceId}">Modifier</button>
+                            <button class="btn-delete" data-id="${resourceId}">Supprimer</button>
+                        </div>
+                        <div class="card-message-area"></div>
+                    `;
+                    resourcesList.appendChild(card);
+
+                    card.querySelector('.btn-edit').addEventListener('click', () => openEditResourceModal(resourceId, resource));
+                    card.querySelector('.btn-delete').addEventListener('click', () => handleDeleteResource(resourceId, card));
+                });
+            }, (error) => {
+                console.error("Error loading resources: ", error);
+                resourcesList.innerHTML = '<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des ressources. Vérifiez les règles de sécurité Firestore.</p>';
+            });
+        }
+
+        /**
+         * Ouvre le modal d'édition et le pré-remplit avec les données de la ressource.
+         * @param {string} resourceId - L'ID du document de la ressource.
+         * @param {object} resourceData - Les données de la ressource.
+         */
+        function openEditResourceModal(resourceId, resourceData) {
+            editResourceId.value = resourceId;
+            editTitle.value = resourceData.title;
+            editDescription.value = resourceData.description;
+            editUrl.value = resourceData.url;
+            editCategory.value = resourceData.category;
+
+            // Génère les champs spécifiques pour l'édition
+            generateEditSpecificFields(resourceData.category, resourceData);
+
+            editResourceModal.classList.add('show');
+        }
+
+        /**
+         * Gère la génération des champs spécifiques dans le modal d'édition.
+         * @param {string} category - La catégorie sélectionnée.
+         * @param {object} resourceData - Les données de la ressource pour pré-remplir.
+         */
+        function generateEditSpecificFields(category, resourceData = {}) {
+            editSpecificFieldsContainer.innerHTML = '';
+            if (category && categorySpecificFields[category]) {
+                categorySpecificFields[category].forEach(field => {
+                    const div = document.createElement('div');
+                    div.className = 'modal-form-group';
+                    div.innerHTML = `
+                        <label for="edit-${field.id}">${field.label}</label>
+                        <input type="${field.type}" id="edit-${field.id}" value="${resourceData[field.id] || ''}" placeholder="${field.placeholder || ''}">
+                    `;
+                    editSpecificFieldsContainer.appendChild(div);
+                });
+            }
+        }
+
+        /**
+         * Gère la soumission du formulaire de modification de ressource.
+         * @param {Event} event - L'événement de soumission.
+         */
+        async function handleUpdateResource(event) {
+            event.preventDefault();
+            const resourceId = editResourceId.value;
+            const updatedData = {
+                title: editTitle.value,
+                description: editDescription.value,
+                url: editUrl.value,
+                category: editCategory.value
+            };
+
+            // Collecte les champs spécifiques mis à jour
+            const category = editCategory.value;
+            if (categorySpecificFields[category]) {
+                categorySpecificFields[category].forEach(field => {
+                    const inputElement = document.getElementById(`edit-${field.id}`);
+                    if (inputElement) {
+                        updatedData[field.id] = inputElement.value;
+                    }
+                });
+            }
+
+            try {
+                await updateDoc(doc(db, 'resources', resourceId), updatedData);
+                alert('Ressource mise à jour avec succès !'); // Utiliser un modal personnalisé en production
+                editResourceModal.classList.remove('show');
+            } catch (e) {
+                console.error("Error updating resource: ", e);
+                alert("Erreur lors de la mise à jour de la ressource."); // Utiliser un modal personnalisé
+            }
         }
 
         /**
@@ -300,8 +629,54 @@
             showCardMessage(cardElement, 'Refusée !', 'error', onAnimationComplete);
         }
 
-        // Charge les propositions en attente au chargement de la page
-        document.addEventListener('DOMContentLoaded', loadPendingSuggestions);
+        /**
+         * Gère la suppression d'une ressource existante.
+         * @param {string} resourceId - L'ID du document de la ressource à supprimer.
+         * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la ressource.
+         */
+        async function handleDeleteResource(resourceId, cardElement) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?')) { // Utiliser un modal personnalisé en production
+                return;
+            }
+
+            // Fonction à exécuter après l'animation de la carte
+            const onAnimationComplete = async () => {
+                try {
+                    await deleteDoc(doc(db, 'resources', resourceId));
+                    // La carte sera retirée du DOM par l'écouteur onSnapshot
+                    alert('Ressource supprimée avec succès !'); // Utiliser un modal personnalisé
+                } catch (e) {
+                    console.error("Error deleting resource: ", e);
+                    alert("Erreur lors de la suppression de la ressource."); // Utiliser un modal personnalisé
+                }
+            };
+
+            showCardMessage(cardElement, 'Supprimée !', 'error', onAnimationComplete);
+        }
+
+
+        // Écouteurs d'événements
+        btnShowPending.addEventListener('click', () => showSection('pending'));
+        btnShowManage.addEventListener('click', () => showSection('manage'));
+
+        // Écouteurs pour le modal d'édition
+        closeEditModalButton.addEventListener('click', () => editResourceModal.classList.remove('show'));
+        cancelEditButton.addEventListener('click', () => editResourceModal.classList.remove('show'));
+        editResourceForm.addEventListener('submit', handleUpdateResource);
+        editCategory.addEventListener('change', () => generateEditSpecificFields(editCategory.value));
+        deleteResourceButton.addEventListener('click', async () => {
+            const resourceId = editResourceId.value;
+            const cardElement = document.querySelector(`.resource-card[data-id="${resourceId}"]`);
+            if (cardElement) {
+                // Ferme le modal avant de déclencher la suppression avec animation
+                editResourceModal.classList.remove('show'); 
+                await handleDeleteResource(resourceId, cardElement);
+            }
+        });
+
+
+        // Charge la section des propositions en attente par défaut au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => showSection('pending'));
 
     </script>
 </body>

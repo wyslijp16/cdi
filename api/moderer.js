@@ -50,6 +50,7 @@ export default async function handler(req, res) {
 
     res.status(200).json({ ok: true });
   } catch (err) {
+    console.error("API error:", err);
     res.status(500).json({ error: err.message || "Erreur serveur" });
   }
 }

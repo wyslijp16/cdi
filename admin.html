@@ -12,16 +12,72 @@
             background-color: #f3f4f6;
             padding-top: 50px;
         }
-        .section-buttons button {
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
+        /* Styles pour le bouton burger */
+        #hamburger-button {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 10001; /* Au-dessus de tout */
+            background-color: #4338ca; /* indigo-700 */
             color: white;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             transition: background-color 0.2s;
         }
-        .section-buttons .active-section-button {
+        #hamburger-button:hover {
+            background-color: #3730a3; /* indigo-800 */
+        }
+
+        /* Styles pour le menu latéral */
+        #sidebar-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 256px; /* w-64 */
+            background-color: #3730a3; /* indigo-800 */
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateX(-100%); /* Masqué par défaut */
+            transition: transform 0.3s ease-in-out;
+            z-index: 10000; /* Juste en dessous du bouton burger */
+            padding: 1rem;
+            padding-top: 5rem; /* Espace pour le bouton burger */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #sidebar-menu.open {
+            transform: translateX(0); /* Visible */
+        }
+        .menu-button {
+            text-align: left;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background-color: transparent;
+            color: white;
+            transition: background-color 0.2s;
+            width: 100%; /* S'assure que le bouton prend toute la largeur */
+        }
+        .menu-button:hover {
             background-color: #4338ca; /* indigo-700 */
         }
+        .menu-button.active-section-button {
+            background-color: #4338ca; /* indigo-700 */
+        }
+
+        /* Ajustement du padding de la main pour ne pas être caché par le menu */
+        main {
+            padding-left: 1rem; /* Padding par défaut */
+            transition: padding-left 0.3s ease-in-out;
+        }
+        /* Si le menu est ouvert, le contenu principal ne doit pas être caché */
+        /* Ceci est plus complexe car le menu overlay. L'important est que le contenu soit visible. */
+        /* Si le menu était "pushing", on ajusterait le padding ici. */
+
+
         .pending-card, .resource-card, .category-config-card {
             background-color: #fff;
             border-radius: 0.5rem;
@@ -48,7 +104,7 @@
         }
         .pending-card .actions, .resource-card .actions, .category-config-card .actions {
             display: flex;
-            flex-wrap: wrap; /* Permet aux boutons de passer à la ligne */
+            flex-wrap: wrap;
             gap: 0.5rem;
             margin-top: 1rem;
         }
@@ -225,17 +281,38 @@
 </head>
 <body class="text-gray-800">
 
+    <!-- Bouton Burger -->
+    <button id="hamburger-button">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+
+    <!-- Menu Latéral -->
+    <nav id="sidebar-menu">
+        <button id="menu-btn-show-welcome" class="menu-button">Accueil</button>
+        <button id="menu-btn-show-pending" class="menu-button">Propositions en attente</button>
+        <button id="menu-btn-show-manage" class="menu-button">Gérer les ressources existantes</button>
+        <button id="menu-btn-show-config" class="menu-button">Gérer Catégories/Filtres</button>
+    </nav>
+
     <main class="container mx-auto p-4 md:p-8">
         <h1 class="text-3xl font-bold text-center mb-8 text-indigo-700">Panneau d'Administration CDI</h1>
 
-        <div class="flex flex-wrap justify-center gap-4 mb-8 section-buttons">
-            <button id="btn-show-pending" class="bg-indigo-600 active-section-button">Propositions en attente</button>
-            <button id="btn-show-manage" class="bg-indigo-600">Gérer les ressources existantes</button>
-            <button id="btn-show-config" class="bg-indigo-600">Gérer Catégories/Filtres</button>
+        <!-- Zone d'affichage des messages généraux -->
+        <div id="general-message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+
+        <!-- Section de bienvenue (nouvelle section, visible par défaut) -->
+        <div id="welcome-section" class="text-center bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-4">Bienvenue sur le Panneau d'Administration du CDI !</h2>
+            <p class="text-lg text-gray-700 mb-4">
+                Utilisez ce panneau pour gérer les ressources du Centre de Documentation et d'Information de L'ékip Teknik.
+            </p>
+            <p class="text-md text-gray-600">
+                Sélectionnez une option dans le menu latéral (cliquez sur l'icône <svg class="inline-block w-5 h-5 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg> en haut à gauche) pour commencer. Vous pourrez valider ou refuser les **propositions en attente**, modifier ou supprimer les **ressources existantes**, et gérer les **catégories et leurs propriétés de filtre**.
+            </p>
         </div>
 
         <!-- Section des propositions en attente -->
-        <div id="pending-suggestions-section">
+        <div id="pending-suggestions-section" class="hidden">
             <h2 class="text-2xl font-bold text-center mb-6">Propositions en attente de validation</h2>
             <div id="pending-suggestions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>
@@ -369,17 +446,20 @@
         const analytics = getAnalytics(app);
 
         // Références aux éléments DOM
-        const btnShowPending = document.getElementById('btn-show-pending');
-        const btnShowManage = document.getElementById('btn-show-manage');
-        const btnShowConfig = document.getElementById('btn-show-config'); // Nouveau bouton
-        
+        const hamburgerButton = document.getElementById('hamburger-button');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const menuButtons = document.querySelectorAll('.menu-button'); 
+
+        const generalMessageArea = document.getElementById('general-message-area');
+
+        const welcomeSection = document.getElementById('welcome-section');
         const pendingSuggestionsSection = document.getElementById('pending-suggestions-section');
         const manageResourcesSection = document.getElementById('manage-resources-section');
-        const manageConfigSection = document.getElementById('manage-config-section'); // Nouvelle section
+        const manageConfigSection = document.getElementById('manage-config-section');
         
         const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
         const resourcesList = document.getElementById('resources-list');
-        const categoriesConfigList = document.getElementById('categories-config-list'); // Nouvelle liste pour la config
+        const categoriesConfigList = document.getElementById('categories-config-list');
         
         const editResourceModal = document.getElementById('edit-resource-modal');
         const editResourceForm = document.getElementById('edit-resource-form');
@@ -392,7 +472,7 @@
         const editTitle = document.getElementById('edit-title');
         const editDescription = document.getElementById('edit-description');
         const editUrl = document.getElementById('edit-url');
-        const editCategory = document.getElementById('edit-category'); // Select pour la catégorie
+        const editCategory = document.getElementById('edit-category');
         const editSpecificFieldsContainer = document.getElementById('edit-specific-fields');
 
         // Formulaire d'ajout de catégorie
@@ -415,49 +495,69 @@
 
         let unsubscribePendingSnapshot = null;
         let unsubscribeResourcesSnapshot = null;
-        let unsubscribeConfigSnapshot = null; // Nouvel écouteur pour la configuration
+        let unsubscribeConfigSnapshot = null;
 
         // Variable pour stocker la configuration des catégories et filtres chargée depuis Firestore
         let categoryConfigData = {};
+
+        /**
+         * Affiche un message dans la zone de message générale.
+         * @param {string} message - Le message à afficher.
+         * @param {string} type - Le type de message ('success' ou 'error').
+         */
+        function showGeneralMessage(message, type) {
+            generalMessageArea.textContent = message;
+            generalMessageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            if (type === 'success') {
+                generalMessageArea.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                generalMessageArea.classList.add('bg-red-100', 'text-red-800');
+            }
+            // Cache le message après 5 secondes
+            setTimeout(() => {
+                generalMessageArea.classList.add('hidden');
+            }, 5000);
+        }
 
         /**
          * Affiche un message directement sur une carte et le fait disparaître progressivement avec la carte.
          * @param {HTMLElement} cardElement - L'élément de la carte sur laquelle afficher le message.
          * @param {string} message - Le message à afficher.
          * @param {string} type - Le type de message ('success' ou 'error').
-         * @param {Function} onAnimationCompleteCallback - Callback à exécuter une fois l'animation terminée.
+         * @returns {Promise<void>} Une promesse qui se résout lorsque l'animation est terminée.
          */
-        function showCardMessage(cardElement, message, type, onAnimationCompleteCallback) {
-            const messageArea = cardElement.querySelector('.card-message-area');
-            if (messageArea) {
-                messageArea.textContent = message;
-                messageArea.className = `card-message-area show ${type}`;
-                
-                // Désactiver les boutons d'action pendant l'animation
-                const actionButtons = cardElement.querySelectorAll('.actions button');
-                actionButtons.forEach(button => button.disabled = true);
+        function showCardMessage(cardElement, message, type) {
+            return new Promise(resolve => {
+                const messageArea = cardElement.querySelector('.card-message-area');
+                if (messageArea) {
+                    messageArea.textContent = message;
+                    messageArea.className = `card-message-area show ${type}`;
+                    
+                    const actionButtons = cardElement.querySelectorAll('.actions button');
+                    actionButtons.forEach(button => button.disabled = true);
 
-                setTimeout(() => {
-                    cardElement.classList.add('fade-out');
-                    void cardElement.offsetHeight; 
+                    setTimeout(() => {
+                        cardElement.classList.add('fade-out');
+                        void cardElement.offsetHeight; 
 
-                    cardElement.addEventListener('transitionend', function handler(event) {
-                        if (event.propertyName === 'opacity') {
-                            cardElement.removeEventListener('transitionend', handler);
-                            if (onAnimationCompleteCallback && typeof onAnimationCompleteCallback === 'function') {
-                                onAnimationCompleteCallback();
+                        const onTransitionEnd = function handler(event) {
+                            if (event.propertyName === 'opacity') {
+                                cardElement.removeEventListener('transitionend', handler);
+                                resolve(); // Résout la promesse une fois l'animation terminée
                             }
-                            // La carte sera retirée du DOM par l'écouteur onSnapshot de Firestore
-                        }
-                    });
-                }, 1000);
-            }
+                        };
+                        cardElement.addEventListener('transitionend', onTransitionEnd);
+                    }, 1000);
+                } else {
+                    resolve(); // Résout immédiatement si pas de zone de message (cas inattendu)
+                }
+            });
         }
 
         /**
          * Affiche la section spécifiée et cache les autres.
          * Gère les écouteurs Firestore pour la section active.
-         * @param {string} sectionId - L'ID de la section à afficher ('pending', 'manage', ou 'config').
+         * @param {string} sectionId - L'ID de la section à afficher ('welcome', 'pending', 'manage', ou 'config').
          */
         function showSection(sectionId) {
             // Désabonne tous les écouteurs de snapshot précédents
@@ -466,29 +566,35 @@
             if (unsubscribeConfigSnapshot) unsubscribeConfigSnapshot();
 
             // Cache toutes les sections
+            welcomeSection.classList.add('hidden');
             pendingSuggestionsSection.classList.add('hidden');
             manageResourcesSection.classList.add('hidden');
-            manageConfigSection.classList.add('hidden'); // Nouvelle section
+            manageConfigSection.classList.add('hidden');
             editResourceModal.classList.remove('show');
-            editCategoryModal.classList.remove('show'); // Cacher le modal d'édition de catégorie
+            editCategoryModal.classList.remove('show');
+            generalMessageArea.classList.add('hidden');
             
-            // Met à jour les classes des boutons de navigation
-            btnShowPending.classList.remove('active-section-button');
-            btnShowManage.classList.remove('active-section-button');
-            btnShowConfig.classList.remove('active-section-button');
+            // Masque le menu latéral
+            sidebarMenu.classList.remove('open');
 
-            // Affiche la section correcte et active le bouton correspondant
-            if (sectionId === 'pending') {
+            // Met à jour les classes des boutons du menu latéral
+            menuButtons.forEach(btn => btn.classList.remove('active-section-button'));
+            const activeButton = document.getElementById(`menu-btn-show-${sectionId}`);
+            if (activeButton) {
+                activeButton.classList.add('active-section-button');
+            }
+
+            // Affiche la section correcte
+            if (sectionId === 'welcome') {
+                welcomeSection.classList.remove('hidden');
+            } else if (sectionId === 'pending') {
                 pendingSuggestionsSection.classList.remove('hidden');
-                btnShowPending.classList.add('active-section-button');
                 loadPendingSuggestions();
             } else if (sectionId === 'manage') {
                 manageResourcesSection.classList.remove('hidden');
-                btnShowManage.classList.add('active-section-button');
                 loadAndManageResources();
             } else if (sectionId === 'config') {
                 manageConfigSection.classList.remove('hidden');
-                btnShowConfig.classList.add('active-section-button');
                 loadCategoriesAndFilters();
             }
         }
@@ -515,7 +621,6 @@
                     card.className = 'pending-card';
                     card.setAttribute('data-id', suggestionId);
 
-                    // Détermine les propriétés à afficher pour la suggestion
                     const displayProperties = categoryConfigData[suggestion.category] ? 
                         categoryConfigData[suggestion.category].map(f => f.id) : [];
 
@@ -566,7 +671,6 @@
                     card.className = 'resource-card';
                     card.setAttribute('data-id', resourceId);
 
-                    // Détermine les propriétés à afficher pour la ressource
                     const displayProperties = categoryConfigData[resource.category] ? 
                         categoryConfigData[resource.category].map(f => f.id) : [];
 
@@ -601,7 +705,6 @@
         async function loadCategoriesAndFilters() {
             categoriesConfigList.innerHTML = '<p class="text-gray-500">Chargement de la configuration...</p>';
             
-            // Met à jour les options du sélecteur de catégorie dans le modal d'édition de ressource
             editCategory.innerHTML = '';
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
@@ -612,9 +715,8 @@
             unsubscribeConfigSnapshot = onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
                 if (docSnap.exists()) {
                     categoryConfigData = docSnap.data();
-                    categoriesConfigList.innerHTML = ''; // Efface le message de chargement
+                    categoriesConfigList.innerHTML = '';
 
-                    // Met à jour les options du sélecteur de catégorie dans le modal d'édition de ressource
                     editCategory.innerHTML = '';
                     const defaultEditOption = document.createElement('option');
                     defaultEditOption.value = '';
@@ -625,10 +727,9 @@
                         if (categoryConfigData.hasOwnProperty(categoryKey)) {
                             const categoryFilters = categoryConfigData[categoryKey];
 
-                            // Ajoute l'option au sélecteur d'édition de ressource
                             const option = document.createElement('option');
                             option.value = categoryKey;
-                            option.textContent = categoryKey; // Ou un libellé plus convivial si stocké
+                            option.textContent = categoryKey;
                             editCategory.appendChild(option);
 
                             const card = document.createElement('div');
@@ -649,7 +750,7 @@
                     }
                 } else {
                     categoriesConfigList.innerHTML = '<p class="text-gray-500">Aucune configuration de catégorie trouvée. Ajoutez-en une !</p>';
-                    categoryConfigData = {}; // Réinitialise si le document n'existe pas
+                    categoryConfigData = {};
                 }
             }, (error) => {
                 console.error("Error loading category config: ", error);
@@ -670,7 +771,6 @@
             editUrl.value = resourceData.url;
             editCategory.value = resourceData.category;
 
-            // Génère les champs spécifiques pour l'édition
             generateEditSpecificFields(resourceData.category, resourceData);
 
             editResourceModal.classList.add('show');
@@ -683,7 +783,7 @@
          */
         function generateEditSpecificFields(category, resourceData = {}) {
             editSpecificFieldsContainer.innerHTML = '';
-            const fields = categoryConfigData[category]; // Utilise la config chargée dynamiquement
+            const fields = categoryConfigData[category];
             if (fields) {
                 fields.forEach(field => {
                     const div = document.createElement('div');
@@ -711,7 +811,6 @@
                 category: editCategory.value
             };
 
-            // Collecte les champs spécifiques mis à jour en fonction de la config dynamique
             const category = editCategory.value;
             const fields = categoryConfigData[category];
             if (fields) {
@@ -725,11 +824,11 @@
 
             try {
                 await updateDoc(doc(db, 'resources', resourceId), updatedData);
-                alert('Ressource mise à jour avec succès !'); // Utiliser un modal personnalisé en production
+                alert('Ressource mise à jour avec succès !');
                 editResourceModal.classList.remove('show');
             } catch (e) {
                 console.error("Error updating resource: ", e);
-                alert("Erreur lors de la mise à jour de la ressource."); // Utiliser un modal personnalisé
+                alert("Erreur lors de la mise à jour de la ressource.");
             }
         }
 
@@ -740,38 +839,31 @@
          * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
          */
         async function handleValidateSuggestion(suggestionId, suggestionData, cardElement) {
-            // Fonction à exécuter après l'animation de la carte
-            const onAnimationComplete = async () => {
-                try {
-                    // Crée un objet pour les données de la ressource validée
-                    const resourceData = {
-                        title: suggestionData.title,
-                        description: suggestionData.description,
-                        url: suggestionData.url,
-                        category: suggestionData.category
-                    };
+            try {
+                await showCardMessage(cardElement, 'Validée !', 'success');
 
-                    // Ajoute les champs spécifiques si présents, basés sur la config dynamique
-                    const specificFields = categoryConfigData[suggestionData.category];
-                    if (specificFields) {
-                        specificFields.forEach(field => {
-                            if (suggestionData[field.id]) { 
-                                resourceData[field.id] = suggestionData[field.id];
-                            }
-                        });
-                    }
-                    
-                    await addDoc(collection(db, 'resources'), resourceData);
-                    await deleteDoc(doc(db, 'suggestions', suggestionId));
-                    // La carte sera retirée du DOM par l'écouteur onSnapshot
-                } catch (e) {
-                    console.error("Error validating suggestion after animation: ", e);
-                    // Si l'opération Firestore échoue APRÈS l'animation, vous pourriez vouloir un autre mécanisme de notification
+                const resourceData = {
+                    title: suggestionData.title,
+                    description: suggestionData.description,
+                    url: suggestionData.url,
+                    category: suggestionData.category
+                };
+
+                const specificFields = categoryConfigData[suggestionData.category];
+                if (specificFields) {
+                    specificFields.forEach(field => {
+                        if (suggestionData[field.id]) { 
+                            resourceData[field.id] = suggestionData[field.id];
+                        }
+                    });
                 }
-            };
-
-            // Déclenche l'animation et passe la fonction Firestore en callback
-            showCardMessage(cardElement, 'Validée !', 'success', onAnimationComplete);
+                
+                await addDoc(collection(db, 'resources'), resourceData);
+                await deleteDoc(doc(db, 'suggestions', suggestionId));
+            } catch (e) {
+                console.error("Error validating suggestion: ", e);
+                showGeneralMessage("Erreur lors de la validation de la proposition.", 'error');
+            }
         }
 
         /**
@@ -780,19 +872,13 @@
          * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
          */
         async function handleRejectSuggestion(suggestionId, cardElement) {
-            // Fonction à exécuter après l'animation de la carte
-            const onAnimationComplete = async () => {
-                try {
-                    await deleteDoc(doc(db, 'suggestions', suggestionId));
-                    // La carte sera retirée du DOM par l'écouteur onSnapshot
-                } catch (e) {
-                    console.error("Error rejecting suggestion after animation: ", e);
-                    // Si l'opération Firestore échoue APRÈS l'animation, vous pourriez vouloir un autre mécanisme de notification
-                }
-            };
-
-            // Déclenche l'animation et passe la fonction Firestore en callback
-            showCardMessage(cardElement, 'Refusée !', 'error', onAnimationComplete);
+            try {
+                await showCardMessage(cardElement, 'Refusée !', 'error');
+                await deleteDoc(doc(db, 'suggestions', suggestionId));
+            } catch (e) {
+                console.error("Error rejecting suggestion: ", e);
+                showGeneralMessage("Erreur lors du refus de la proposition.", 'error');
+            }
         }
 
         /**
@@ -801,29 +887,24 @@
          * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la ressource.
          */
         async function handleDeleteResource(resourceId, cardElement) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?')) { // Utiliser un modal personnalisé en production
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?')) {
                 return;
             }
 
-            // Fonction à exécuter après l'animation de la carte
-            const onAnimationComplete = async () => {
-                try {
-                    await deleteDoc(doc(db, 'resources', resourceId));
-                    // La carte sera retirée du DOM par l'écouteur onSnapshot
-                    alert('Ressource supprimée avec succès !'); // Utiliser un modal personnalisé
-                } catch (e) {
-                    console.error("Error deleting resource: ", e);
-                    alert("Erreur lors de la suppression de la ressource."); // Utiliser un modal personnalisé
-                }
-            };
-
-            showCardMessage(cardElement, 'Supprimée !', 'error', onAnimationComplete);
+            try {
+                await showCardMessage(cardElement, 'Supprimée !', 'error');
+                await deleteDoc(doc(db, 'resources', resourceId));
+                showGeneralMessage('Ressource supprimée avec succès !', 'success');
+            } catch (e) {
+                console.error("Error deleting resource: ", e);
+                showGeneralMessage("Erreur lors de la suppression de la ressource.", 'error');
+            }
         }
 
         /**
          * Ajoute un nouveau champ de propriété de filtre au formulaire d'ajout de catégorie.
          */
-        function addFilterPropertyField(container, initialId = '', initialLabel = '', isEdit = false) {
+        function addFilterPropertyField(container, initialId = '', initialLabel = '') {
             const div = document.createElement('div');
             div.className = 'filter-property-item';
             div.innerHTML = `
@@ -848,7 +929,7 @@
             const newCategoryLabel = newCategoryLabelInput.value.trim();
 
             if (!newCategoryId || !newCategoryLabel) {
-                alert('Veuillez remplir l\'ID et le libellé de la catégorie.');
+                showGeneralMessage('Veuillez remplir l\'ID et le libellé de la catégorie.', 'error');
                 return;
             }
 
@@ -862,7 +943,6 @@
             });
 
             try {
-                // Récupère le document de configuration actuel
                 const configDocRef = doc(db, 'appConfig', 'categoriesAndFilters');
                 const configDocSnap = await getDoc(configDocRef);
                 let currentConfig = {};
@@ -870,17 +950,20 @@
                     currentConfig = configDocSnap.data();
                 }
 
-                // Ajoute la nouvelle catégorie à la configuration
+                if (currentConfig[newCategoryId]) {
+                    showGeneralMessage(`La catégorie avec l'ID "${newCategoryId}" existe déjà.`, 'error');
+                    return;
+                }
+
                 currentConfig[newCategoryId] = filterProperties;
 
-                // Met à jour le document de configuration dans Firestore
                 await setDoc(configDocRef, currentConfig);
-                alert('Catégorie ajoutée avec succès !');
+                showGeneralMessage('Catégorie ajoutée avec succès !', 'success');
                 addCategoryForm.reset();
-                newCategoryFilterPropertiesContainer.innerHTML = ''; // Nettoie les champs de filtre
+                newCategoryFilterPropertiesContainer.innerHTML = '';
             } catch (e) {
                 console.error("Error adding category: ", e);
-                alert("Erreur lors de l'ajout de la catégorie.");
+                showGeneralMessage("Erreur lors de l'ajout de la catégorie.", 'error');
             }
         }
 
@@ -891,11 +974,11 @@
          */
         function openEditCategoryModal(categoryKey, filters) {
             editCategoryKeyInput.value = categoryKey;
-            editCategoryModalLabelInput.value = categoryKey; // Afficher l'ID comme libellé pour l'instant
+            editCategoryModalLabelInput.value = categoryKey;
             editCategoryFilterPropertiesList.innerHTML = '';
 
             filters.forEach(filter => {
-                addFilterPropertyField(editCategoryFilterPropertiesList, filter.id, filter.label, true);
+                addFilterPropertyField(editCategoryFilterPropertiesList, filter.id, filter.label);
             });
 
             editCategoryModal.classList.add('show');
@@ -927,12 +1010,12 @@
 
                 currentConfig[categoryKey] = updatedFilters;
 
-                await setDoc(configDocRef, currentConfig); // Utilise setDoc pour remplacer l'objet de la catégorie
-                alert('Catégorie mise à jour avec succès !');
+                await setDoc(configDocRef, currentConfig);
+                showGeneralMessage('Catégorie mise à jour avec succès !', 'success');
                 editCategoryModal.classList.remove('show');
             } catch (e) {
                 console.error("Error updating category: ", e);
-                alert("Erreur lors de la mise à jour de la catégorie.");
+                showGeneralMessage("Erreur lors de la mise à jour de la catégorie.", 'error');
             }
         }
 
@@ -946,29 +1029,33 @@
                 return;
             }
 
-            const onAnimationComplete = async () => {
-                try {
-                    const configDocRef = doc(db, 'appConfig', 'categoriesAndFilters');
-                    const configDocSnap = await getDoc(configDocRef);
-                    if (configDocSnap.exists()) {
-                        const currentConfig = configDocSnap.data();
-                        delete currentConfig[categoryKey]; // Supprime la clé de la catégorie
-                        await setDoc(configDocRef, currentConfig); // Met à jour le document
-                        alert('Catégorie supprimée avec succès !');
-                    }
-                } catch (e) {
-                    console.error("Error deleting category: ", e);
-                    alert("Erreur lors de la suppression de la catégorie.");
+            try {
+                await showCardMessage(cardElement, 'Supprimée !', 'error');
+                const configDocRef = doc(db, 'appConfig', 'categoriesAndFilters');
+                const configDocSnap = await getDoc(configDocRef);
+                if (configDocSnap.exists()) {
+                    const currentConfig = configDocSnap.data();
+                    delete currentConfig[categoryKey];
+                    await setDoc(configDocRef, currentConfig);
+                    showGeneralMessage('Catégorie supprimée avec succès !', 'success');
                 }
-            };
-            showCardMessage(cardElement, 'Supprimée !', 'error', onAnimationComplete);
+            } catch (e) {
+                console.error("Error deleting category: ", e);
+                showGeneralMessage("Erreur lors de la suppression de la catégorie.", 'error');
+            }
         }
 
+        // Écouteurs d'événements pour le bouton burger et les éléments du menu
+        hamburgerButton.addEventListener('click', () => {
+            sidebarMenu.classList.toggle('open');
+        });
 
-        // Écouteurs d'événements
-        btnShowPending.addEventListener('click', () => showSection('pending'));
-        btnShowManage.addEventListener('click', () => showSection('manage'));
-        btnShowConfig.addEventListener('click', () => showSection('config')); // Nouvel écouteur
+        menuButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const sectionId = button.id.replace('menu-btn-show-', '');
+                showSection(sectionId);
+            });
+        });
 
         // Écouteurs pour le modal d'édition de ressource
         closeResourceModalButton.addEventListener('click', () => editResourceModal.classList.remove('show'));
@@ -995,20 +1082,20 @@
         editCategoryForm.addEventListener('submit', handleUpdateCategory);
 
 
-        // Charge la section des propositions en attente par défaut au chargement de la page
+        // Charge la section de bienvenue par défaut au chargement de la page
         document.addEventListener('DOMContentLoaded', () => {
-            // Charge d'abord la configuration, puis affiche la section par défaut
+            // Charge la configuration des catégories en premier
             onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
                 if (docSnap.exists()) {
                     categoryConfigData = docSnap.data();
                 } else {
                     categoryConfigData = {};
                 }
-                showSection('pending'); // Affiche la section des propositions une fois la config chargée
+                showSection('welcome'); // Affiche l'écran de bienvenue une fois la config chargée
             }, (error) => {
                 console.error("Error initializing category config: ", error);
-                categoryConfigData = {}; // Assure que c'est vide en cas d'erreur
-                showSection('pending'); // Tente d'afficher même en cas d'erreur de config
+                categoryConfigData = {};
+                showSection('welcome'); // Tente d'afficher même en cas d'erreur de config
             });
         });
 

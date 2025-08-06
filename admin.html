@@ -492,15 +492,16 @@
         const MAX_RETRIES = 5;
         const RETRY_DELAY_MS = 1000;
 
-        // Configuration Firebase (à remplacer par la vôtre)
-        // Laisser vide si vous utilisez un environnement qui injecte la config
+        // ATTENTION : REMPLACEZ CET OBJET firebaseConfig PAR CELUI DE VOTRE PROJET FIREBASE.
+        // VOUS POUVEZ LE TROUVER DANS LA CONSOLE FIREBASE -> Paramètres du projet -> Vos applications.
         const firebaseConfig = {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
+        apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
+        authDomain: "cdi-lfi.firebaseapp.com",
+        projectId: "cdi-lfi",
+        storageBucket: "cdi-lfi.firebasestorage.app",
+        messagingSenderId: "626855610699",
+        appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
+        measurementId: "G-EMXFSRL9W0"
         };
 
         // Initialisation de Firebase

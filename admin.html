@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDI Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            padding-top: 50px; /* Moins de padding car pas de header flottant ici */
+        }
+        .pending-card {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .pending-card h3 {
+            font-weight: 600;
+            color: #4338ca;
+            font-size: 1.25rem;
+        }
+        .pending-card p {
+            color: #4b5563;
+        }
+        .pending-card .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .pending-card .actions button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px; /* rounded-full */
+            font-weight: 600;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .pending-card .actions .btn-validate {
+            background-color: #10b981; /* emerald-500 */
+        }
+        .pending-card .actions .btn-validate:hover {
+            background-color: #059669; /* emerald-600 */
+        }
+        .pending-card .actions .btn-reject {
+            background-color: #ef4444; /* red-500 */
+        }
+        .pending-card .actions .btn-reject:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <main class="container mx-auto p-4 md:p-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-indigo-700">Panneau d'Administration CDI</h1>
+
+        <!-- Zone d'affichage des messages (succès/erreur) -->
+        <div id="message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+
+        <h2 class="text-2xl font-bold text-center mb-6">Propositions en attente de validation</h2>
+        <div id="pending-suggestions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>
+        </div>
+
+    </main>
+
+    <script type="module">
+        // Importation des fonctions nécessaires depuis les SDK Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+
+        // Votre configuration Firebase (DOIT être la même que dans votre index.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
+            authDomain: "cdi-lfi.firebaseapp.com",
+            projectId: "cdi-lfi",
+            storageBucket: "cdi-lfi.firebasestorage.app",
+            messagingSenderId: "626855610699",
+            appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
+            measurementId: "G-EMXFSRL9W0"
+        };
+
+        // Initialisation de Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app); // Analytics est initialisé mais non utilisé activement dans ce script
+
+        // Références aux éléments DOM spécifiques au panneau admin
+        const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
+        const messageArea = document.getElementById('message-area');
+
+        let unsubscribeAdminSnapshot = null; // Stocke la fonction de désabonnement de l'écouteur Firestore pour les suggestions
+
+        // Définition des champs spécifiques pour chaque catégorie du formulaire de proposition
+        // Nécessaire ici pour savoir quels champs spécifiques copier lors de la validation
+        const categorySpecificFields = {
+            'petitions': [
+                { id: 'platform', label: 'Plateforme', type: 'text', placeholder: 'Ex: petitions.assemblee-nationale.fr' },
+                { id: 'struggle', label: 'Lutte', type: 'text', placeholder: 'Ex: Politique, Santé, Social' }
+            ],
+            'comptes-utiles': [
+                { id: 'network', label: 'Réseau', type: 'text', placeholder: 'Ex: Twitter, Facebook, YouTube' }
+            ],
+            'sites-utiles': [
+                { id: 'type', label: 'Type de site', type: 'text', placeholder: 'Ex: Site officiel, Blog personnel, Journal' }
+            ],
+            'ouvrages': [
+                { id: 'publisher', label: 'Éditeur', type: 'text', placeholder: 'Ex: Éditions du Seuil' }
+            ]
+        };
+
+        /**
+         * Affiche un message dans la zone de message.
+         * @param {string} message - Le message à afficher.
+         * @param {string} type - Le type de message ('success' ou 'error').
+         */
+        function showMessage(message, type) {
+            messageArea.textContent = message;
+            messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            if (type === 'success') {
+                messageArea.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                messageArea.classList.add('bg-red-100', 'text-red-800');
+            }
+            // Cache le message après 5 secondes
+            setTimeout(() => {
+                messageArea.classList.add('hidden');
+            }, 5000);
+        }
+
+        /**
+         * Charge et affiche les propositions en attente de la collection 'suggestions'.
+         */
+        function loadPendingSuggestions() {
+            pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>';
+
+            // Se désabonne de l'écouteur précédent s'il existe
+            if (unsubscribeAdminSnapshot) unsubscribeAdminSnapshot();
+
+            // Écoute les changements en temps réel dans la collection 'suggestions'
+            unsubscribeAdminSnapshot = onSnapshot(collection(db, 'suggestions'), (querySnapshot) => {
+                pendingSuggestionsList.innerHTML = ''; // Efface le message de chargement
+
+                if (querySnapshot.empty) {
+                    pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune proposition en attente pour le moment.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const suggestion = docSnap.data();
+                    const suggestionId = docSnap.id;
+
+                    const card = document.createElement('div');
+                    card.className = 'pending-card';
+                    card.innerHTML = `
+                        <h3 class="text-indigo-800">${suggestion.title}</h3>
+                        <p class="text-gray-600">${suggestion.description}</p>
+                        <p class="text-gray-500 text-sm"><strong>URL:</strong> <a href="${suggestion.url}" target="_blank" class="text-blue-600 hover:underline">${suggestion.url}</a></p>
+                        <p class="text-gray-500 text-sm"><strong>Catégorie:</strong> ${suggestion.category}</p>
+                        ${Object.keys(suggestion).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key)).map(key => `
+                            <p class="text-gray-500 text-sm"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${suggestion[key]}</p>
+                        `).join('')}
+                        <div class="actions">
+                            <button class="btn-validate" data-id="${suggestionId}">Valider</button>
+                            <button class="btn-reject" data-id="${suggestionId}">Refuser</button>
+                        </div>
+                    `;
+                    pendingSuggestionsList.appendChild(card);
+
+                    // Ajoute les écouteurs d'événements aux boutons de validation/rejet
+                    card.querySelector('.btn-validate').addEventListener('click', () => handleValidateSuggestion(suggestionId, suggestion));
+                    card.querySelector('.btn-reject').addEventListener('click', () => handleRejectSuggestion(suggestionId));
+                });
+            }, (error) => {
+                console.error("Error loading pending suggestions: ", error);
+                pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des propositions. Vérifiez les règles de sécurité Firestore.</p>';
+            });
+        }
+
+        /**
+         * Gère la validation d'une suggestion : l'ajoute aux ressources et la supprime des suggestions.
+         * @param {string} suggestionId - L'ID du document de suggestion.
+         * @param {object} suggestionData - Les données de la suggestion à valider.
+         */
+        async function handleValidateSuggestion(suggestionId, suggestionData) {
+            try {
+                // Crée un objet pour les données de la ressource validée
+                const resourceData = {
+                    title: suggestionData.title,
+                    description: suggestionData.description,
+                    url: suggestionData.url,
+                    category: suggestionData.category
+                };
+
+                // Ajoute les champs spécifiques si présents
+                const specificFields = categorySpecificFields[suggestionData.category];
+                if (specificFields) {
+                    specificFields.forEach(field => {
+                        if (suggestionData[field.id]) {
+                            resourceData[field.id] = suggestionData[field.id];
+                        }
+                    });
+                }
+                
+                await addDoc(collection(db, 'resources'), resourceData);
+                await deleteDoc(doc(db, 'suggestions', suggestionId));
+                showMessage('Proposition validée et ajoutée aux ressources !', 'success');
+            } catch (e) {
+                console.error("Error validating suggestion: ", e);
+                showMessage("Erreur lors de la validation de la proposition.", 'error');
+            }
+        }
+
+        /**
+         * Gère le rejet d'une suggestion : la supprime des suggestions.
+         * @param {string} suggestionId - L'ID du document de suggestion.
+         */
+        async function handleRejectSuggestion(suggestionId) {
+            try {
+                await deleteDoc(doc(db, 'suggestions', suggestionId));
+                showMessage('Proposition refusée et supprimée.', 'success');
+            } catch (e) {
+                console.error("Error rejecting suggestion: ", e);
+                showMessage("Erreur lors du refus de la proposition.", 'error');
+            }
+        }
+
+        // Charge les propositions en attente au chargement de la page
+        document.addEventListener('DOMContentLoaded', loadPendingSuggestions);
+
+    </script>
+</body>
+</html>

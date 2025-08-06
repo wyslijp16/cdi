@@ -492,15 +492,16 @@
         const MAX_RETRIES = 5;
         const RETRY_DELAY_MS = 1000;
 
-        // ATTENTION : L'objet firebaseConfig est désormais vide. Il faudra le remplir manuellement pour l'exécution locale.
-        // Pour Vercel, les variables d'environnement seront injectées au déploiement.
+        // ATTENTION : REMPLACEZ CET OBJET firebaseConfig PAR CELUI DE VOTRE PROJET FIREBASE.
+        // VOUS POUVEZ LE TROUVER DANS LA CONSOLE FIREBASE -> Paramètres du projet -> Vos applications.
         const firebaseConfig = {
-            apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-            authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-            projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-            storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-            appId: import.meta.env.VITE_FIREBASE_APP_ID
+        apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
+        authDomain: "cdi-lfi.firebaseapp.com",
+        projectId: "cdi-lfi",
+        storageBucket: "cdi-lfi.firebasestorage.app",
+        messagingSenderId: "626855610699",
+        appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
+        measurementId: "G-EMXFSRL9W0"
         };
 
         // Initialisation de Firebase
@@ -661,7 +662,6 @@
                     if (userDocSnap.exists() && (userDocSnap.data().role === 'superuser' || userDocSnap.data().role === 'admin')) {
                         showAdminPanel(user);
                     } else {
-                        await signOut(auth);
                         showUnauthorizedPage();
                     }
                 } catch (error) {
@@ -800,9 +800,10 @@
 
                 if (isAccepted) {
                     // Si acceptée, ajouter à la collection "resources"
+                    const resourceRef = collection(db, 'resources');
                     const pendingDocSnap = await getDoc(doc(db, 'pending', docId));
                     if (pendingDocSnap.exists()) {
-                        await addDoc(collection(db, 'resources'), pendingDocSnap.data());
+                        await addDoc(resourceRef, pendingDocSnap.data());
                     }
                     messageArea.textContent = 'Validé!';
                     messageArea.classList.add('success', 'show');

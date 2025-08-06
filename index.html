@@ -51,6 +51,9 @@
             <button id="btn-proposer" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-emerald-600 transition-colors">Proposer une ressource</button>
         </div>
 
+        <!-- Message display area -->
+        <div id="message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+
         <div id="controls-container" class="hidden">
             <div id="search-container" class="mb-4">
                 <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors">
@@ -60,6 +63,7 @@
             </div>
         </div>
 
+        <!-- Formulaire de proposition de ressource (initialement caché) -->
         <div id="suggestion-form-container" class="hidden">
             <h2 class="text-2xl font-bold text-center mb-4">Proposer une nouvelle ressource</h2>
             <form id="suggestion-form" class="bg-white p-8 rounded-lg shadow-md max-w-xl mx-auto">
@@ -98,7 +102,28 @@
 
     </main>
 
-    <script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
+            authDomain: "cdi-lfi.firebaseapp.com",
+            projectId: "cdi-lfi",
+            storageBucket: "cdi-lfi.firebasestorage.app",
+            messagingSenderId: "626855610699",
+            appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
+            measurementId: "G-EMXFSRL9W0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app); // Analytics initialized but not actively used in this script
+
         const contentData = {
             petitions: [
                 { title: "Pétition pour la 6ème République", description: "Cette pétition vise à la convocation d'une Assemblée constituante pour la 6e République.", url: "https://petitions.assemblee-nationale.fr/initiatives/i-2793", platform: "petitions.assemblee-nationale.fr", struggle: "Politique" },
@@ -136,9 +161,36 @@
         const categoryButtons = document.querySelectorAll('.btn');
         const proposeButton = document.getElementById('btn-proposer');
         const suggestionFormContainer = document.getElementById('suggestion-form-container');
+        const suggestionForm = document.getElementById('suggestion-form');
+        const messageArea = document.getElementById('message-area');
 
         let currentCategory = null;
 
+        /**
+         * Displays a message in the message area.
+         * @param {string} message - The message to display.
+         * @param {string} type - The type of message ('success' or 'error').
+         */
+        function showMessage(message, type) {
+            messageArea.textContent = message;
+            messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            if (type === 'success') {
+                messageArea.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                messageArea.classList.add('bg-red-100', 'text-red-800');
+            }
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                messageArea.classList.add('hidden');
+            }, 5000);
+        }
+
+        /**
+         * Creates an HTML card element for a given item.
+         * @param {object} item - The data object for the card.
+         * @param {string[]} filterProperties - An array of properties to use for data attributes and display.
+         * @returns {HTMLAnchorElement} The created card element.
+         */
         function createCard(item, filterProperties) {
             const card = document.createElement('a');
             card.href = item.url;
@@ -176,13 +228,19 @@
             return card;
         }
 
+        /**
+         * Renders the content for a selected category.
+         * @param {string} categoryKey - The key of the category to render.
+         */
         function renderCategory(categoryKey) {
-            // Hide the suggestion form
+            // Hide the suggestion form and message area
             suggestionFormContainer.classList.add('hidden');
+            messageArea.classList.add('hidden');
 
             contentContainer.innerHTML = '';
             filtersContainer.innerHTML = '';
             controlsContainer.classList.remove('hidden');
+            contentContainer.classList.remove('hidden'); // Ensure content container is visible
             currentCategory = categoryKey;
             
             searchInput.value = '';
@@ -190,6 +248,7 @@
             const items = contentData[categoryKey];
             if (!items) return;
 
+            // Determine filterable properties based on the first item in the category
             const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
             
             filterProperties.forEach(prop => {
@@ -229,6 +288,9 @@
             });
         }
 
+        /**
+         * Filters the displayed content cards based on search term and selected filters.
+         */
         function filterContent() {
             const searchTerm = searchInput.value.toLowerCase();
             const cards = contentContainer.querySelectorAll('.card');
@@ -261,16 +323,57 @@
             });
         }
 
+        /**
+         * Shows the resource suggestion form and hides other content.
+         */
         function showProposeForm() {
-            // Hide all other content and buttons
+            // Deactivate all category buttons
             categoryButtons.forEach(btn => btn.classList.remove('active-button'));
+            // Hide main content and controls
             controlsContainer.classList.add('hidden');
-            contentContainer.innerHTML = '';
+            contentContainer.classList.add('hidden');
+            messageArea.classList.add('hidden'); // Hide any previous messages
             
             // Show the suggestion form
             suggestionFormContainer.classList.remove('hidden');
+            suggestionForm.reset(); // Clear form fields
         }
 
+        /**
+         * Handles the submission of the resource suggestion form, sending data to Firestore.
+         * @param {Event} event - The form submission event.
+         */
+        async function handleSuggestionSubmit(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const title = document.getElementById('suggestion-title').value;
+            const description = document.getElementById('suggestion-description').value;
+            const url = document.getElementById('suggestion-url').value;
+            const category = document.getElementById('suggestion-category').value;
+
+            const newSuggestion = {
+                title,
+                description,
+                url,
+                category,
+                createdAt: serverTimestamp(), // Adds a server-generated timestamp
+                status: 'pending' // Initial status for review
+            };
+
+            try {
+                // Add a new document to the 'suggestions' collection
+                await addDoc(collection(db, 'suggestions'), newSuggestion);
+                showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
+                suggestionForm.reset(); // Clear the form
+                // Optionally, after submission, you might want to switch back to a category view
+                // For now, it stays on the form with a success message.
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');
+            }
+        }
+
+        // Event Listeners
         categoryButtons.forEach(button => {
             button.addEventListener('click', () => {
                 categoryButtons.forEach(btn => btn.classList.remove('active-button'));
@@ -283,6 +386,8 @@
 
         proposeButton.addEventListener('click', showProposeForm);
         searchInput.addEventListener('keyup', filterContent);
+        suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+
     </script>
 </body>
 </html>

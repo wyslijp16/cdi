@@ -35,7 +35,7 @@ export default async function handler(req, res) {
         headers: { "X-Master-Key": process.env.JSONBIN_KEY }
       });
       const resData = await resRes.json();
-      const ressources = resData.record || [];
+      let ressources = Array.isArray(resData.record) ? resData.record : [];
       ressources.push(proposition);
       // Sauvegarde la nouvelle liste de ressources (toujours PUT)
       await fetch(process.env.JSONBIN_RESSOURCES_URL, {

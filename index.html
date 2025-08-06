@@ -48,6 +48,7 @@
             <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Comptes utiles</button>
             <button id="btn-sites-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Sites utiles</button>
             <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Ouvrages</button>
+            <button id="btn-propositions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Propositions validées</button>
         </div>
 
         <div id="controls-container" class="hidden">
@@ -193,6 +194,40 @@
             });
         }
 
+        async function renderPropositions() {
+            contentContainer.innerHTML = '';
+            filtersContainer.innerHTML = '';
+            controlsContainer.classList.remove('hidden');
+            currentCategory = 'propositions';
+            searchInput.value = '';
+            let items = [];
+            try {
+                const res = await fetch('/propositions.json');
+                items = await res.json();
+            } catch (e) {
+                contentContainer.innerHTML = '<div class="text-center text-red-500">Impossible de charger les propositions validées.</div>';
+                return;
+            }
+            if (!items || items.length === 0) {
+                contentContainer.innerHTML = '<div class="text-center text-gray-500">Aucune proposition validée pour le moment.</div>';
+                return;
+            }
+            items.forEach(item => {
+                const card = document.createElement('a');
+                card.href = item.url;
+                card.target = "_blank";
+                card.className = "card block bg-white rounded-lg shadow-md flex p-6";
+                const mainContent = document.createElement('div');
+                mainContent.className = "flex-1 pr-4";
+                mainContent.innerHTML = `
+                    <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
+                    <p class="text-gray-600">${item.description || ''}</p>
+                `;
+                card.appendChild(mainContent);
+                contentContainer.appendChild(card);
+            });
+        }
+
         function filterContent() {
             const searchTerm = searchInput.value.toLowerCase();
             const cards = contentContainer.querySelectorAll('.card');
@@ -229,9 +264,12 @@
             button.addEventListener('click', () => {
                 categoryButtons.forEach(btn => btn.classList.remove('active-button'));
                 button.classList.add('active-button');
-                
                 const categoryKey = button.id.replace('btn-', '');
-                renderCategory(categoryKey);
+                if (categoryKey === 'propositions') {
+                    renderPropositions();
+                } else {
+                    renderCategory(categoryKey);
+                }
             });
         });
 

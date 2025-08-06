@@ -298,8 +298,8 @@
             
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="email" autocomplete="email" class="mt-1 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" required>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+                    <input type="text" id="username" autocomplete="username" class="mt-1 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" required>
                 </div>
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
@@ -476,13 +476,12 @@
     <script type="module">
         // Importation des fonctions nécessaires depuis les SDK Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc, getDoc, setDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 
         // VOTRE CONFIGURATION FIREBASE
-        // Votre configuration Firebase (DOIT être la même que dans votre index.html)
         const firebaseConfig = { apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w", authDomain: "cdi-lfi.firebaseapp.com", projectId: "cdi-lfi", storageBucket: "cdi-lfi.firebasestorage.app", messagingSenderId: "626855610699", appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce", measurementId: "G-EMXFSRL9W0" };
 
         // Initialisation de Firebase
@@ -505,20 +504,20 @@
         const superuserMenuItems = document.getElementById('superuser-menu-items');
         
         /**
-         * Récupère le rôle de l'utilisateur depuis Firestore.
+         * Récupère le rôle et l'e-mail de l'utilisateur depuis Firestore.
          * @param {string} uid - L'ID de l'utilisateur.
-         * @returns {Promise<string|null>} Le rôle de l'utilisateur ('moderator', 'superuser') ou null.
+         * @returns {Promise<{role: string, email: string}|null>} Le rôle et l'e-mail de l'utilisateur ou null.
          */
-        async function getUserRole(uid) {
+        async function getUserProfile(uid) {
             try {
                 const userDocRef = doc(db, 'users', uid);
                 const userDoc = await getDoc(userDocRef);
                 if (userDoc.exists()) {
-                    return userDoc.data().role;
+                    return userDoc.data();
                 }
                 return null;
             } catch (error) {
-                console.error("Erreur lors de la récupération du rôle : ", error);
+                console.error("Erreur lors de la récupération du profil utilisateur : ", error);
                 return null;
             }
         }
@@ -529,15 +528,15 @@
          */
         async function updateUI(user) {
             if (user) {
-                const role = await getUserRole(user.uid);
-                if (role && (role === 'moderator' || role === 'superuser')) {
+                const profile = await getUserProfile(user.uid);
+                if (profile && (profile.role === 'moderator' || profile.role === 'superuser')) {
                     loginContainer.classList.add('hidden');
                     adminPanelContainer.classList.remove('hidden');
-                    userEmailMenu.textContent = user.email;
-                    userRoleMenu.textContent = role === 'moderator' ? 'Modérateur·trice' : 'SuperUser';
+                    userEmailMenu.textContent = profile.email;
+                    userRoleMenu.textContent = profile.role === 'moderator' ? 'Modérateur·trice' : 'SuperUser';
                     
                     // Afficher les éléments du menu appropriés
-                    superuserMenuItems.classList.toggle('hidden', role !== 'superuser');
+                    superuserMenuItems.classList.toggle('hidden', profile.role !== 'superuser');
                     showSection('welcome'); // Affiche l'écran de bienvenue une fois la connexion établie
 
                 } else {
@@ -560,16 +559,36 @@
         // Écouteur pour la soumission du formulaire de connexion
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             loginMessage.classList.add('hidden');
     
             try {
+                // Étape 1: Trouver l'e-mail à partir du nom d'utilisateur dans Firestore
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("username", "==", username));
+                const querySnapshot = await getDocs(q);
+    
+                if (querySnapshot.empty) {
+                    throw new Error("Nom d'utilisateur non trouvé.");
+                }
+    
+                const userData = querySnapshot.docs[0].data();
+                const email = userData.email;
+    
+                // Étape 2: Utiliser l'e-mail trouvé pour se connecter
                 await signInWithEmailAndPassword(auth, email, password);
                 // La fonction onAuthStateChanged se chargera de l'UI
+    
             } catch (error) {
                 console.error(error);
-                loginMessage.textContent = "Erreur de connexion. Veuillez vérifier votre email et mot de passe.";
+                let message = "Erreur de connexion.";
+                if (error.code === 'auth/wrong-password') {
+                    message = "Mot de passe incorrect.";
+                } else if (error.message.includes("Nom d'utilisateur non trouvé.")) {
+                    message = "Nom d'utilisateur non trouvé.";
+                }
+                loginMessage.textContent = message;
                 loginMessage.classList.remove('hidden');
             }
         });

@@ -117,9 +117,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, action: actionType, password: adminPass })
       });
-      if (res.ok) {
-        await fetchPropositions();
-      } else {
+      await fetchPropositions(); // <-- odświeżenie listy po chaque action
+      if (!res.ok) {
         document.getElementById('message').textContent = "Erreur lors de l'action.";
       }
     };
@@ -134,4 +133,5 @@
     });
   </script>
 </body>
+</html>
 </html>

@@ -3,112 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CDI de L'ékip Teknik</title>
+    <title>CDI Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
-            padding-top: 100px;
+            padding-top: 50px;
         }
-        .card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .active-button {
-            background-color: #4338ca;
-        }
-        .floating-header {
+        /* Styles pour le bouton burger */
+        #hamburger-button {
             position: fixed;
-            top: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            min-width: 590px;
-            max-width: 90%;
-            text-align: center;
+            top: 1rem;
+            left: 1rem;
+            z-index: 10001; /* Au-dessus de tout */
+            background-color: #4338ca; /* indigo-700 */
+            color: white;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: background-color 0.2s;
+        }
+        #hamburger-button:hover {
+            background-color: #3730a3; /* indigo-800 */
+        }
+
+        /* Styles pour le menu latéral */
+        #sidebar-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 256px; /* w-64 */
+            background-color: #3730a3; /* indigo-800 */
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateX(-100%); /* Masqué par défaut */
+            transition: transform 0.3s ease-in-out;
+            z-index: 10000; /* Juste en dessous du bouton burger */
+            padding: 1rem;
+            padding-top: 5rem; /* Espace pour le bouton burger */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #sidebar-menu.open {
+            transform: translateX(0); /* Visible */
+        }
+        .menu-button {
+            text-align: left;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background-color: transparent;
+            color: white;
+            transition: background-color 0.2s;
+            width: 100%; /* S'assure que le bouton prend toute la largeur */
+        }
+        .menu-button:hover {
+            background-color: #4338ca; /* indigo-700 */
+        }
+        .menu-button.active-section-button {
+            background-color: #4338ca; /* indigo-700 */
+        }
+
+        /* Ajustement du padding de la main pour ne pas être caché par le menu */
+        main {
+            padding-left: 1rem; /* Padding par défaut */
+            transition: padding-left 0.3s ease-in-out;
+        }
+        /* Si le menu est ouvert, le contenu principal ne doit pas être caché */
+        /* Ceci est plus complexe car le menu overlay. L'important est que le contenu soit visible. */
+        /* Si le menu était "pushing", on ajusterait le padding ici. */
+
+
+        .pending-card, .resource-card, .category-config-card {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .pending-card.fade-out, .resource-card.fade-out, .category-config-card.fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        .pending-card h3, .resource-card h3, .category-config-card h3 {
+            font-weight: 600;
+            color: #4338ca;
+            font-size: 1.25rem;
+        }
+        .pending-card p, .resource-card p, .category-config-card p {
+            color: #4b5563;
+        }
+        .pending-card .actions, .resource-card .actions, .category-config-card .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .pending-card .actions button, .resource-card .actions button, .category-config-card .actions button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .pending-card .actions .btn-validate, .resource-card .actions .btn-edit, .category-config-card .actions .btn-edit-category {
+            background-color: #10b981; /* emerald-500 */
+        }
+        .pending-card .actions .btn-validate:hover, .resource-card .actions .btn-edit:hover, .category-config-card .actions .btn-edit-category:hover {
+            background-color: #059669; /* emerald-600 */
+        }
+        .pending-card .actions .btn-reject, .resource-card .actions .btn-delete, .category-config-card .actions .btn-delete-category {
+            background-color: #ef4444; /* red-500 */
+        }
+        .pending-card .actions .btn-reject:hover, .resource-card .actions .btn-delete:hover, .category-config-card .actions .btn-delete-category:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        /* Styles pour le message sur la carte */
+        .card-message-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease-in;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .card-message-area.show {
+            opacity: 1;
+        }
+        .card-message-area.success {
+            background-color: rgba(16, 185, 129, 0.9);
+        }
+        .card-message-area.error {
+            background-color: rgba(239, 68, 68, 0.9);
+        }
+
+        /* Styles pour le modal d'édition */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            visibility: hidden;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh; /* Hauteur maximale de la modale */
+            overflow-y: auto; /* Ajoute une barre de défilement si le contenu dépasse */
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-out;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #4b5563;
+        }
+        .modal-close-button:hover {
+            color: #1f2937;
+        }
+        .modal-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        .modal-form-group input, .modal-form-group textarea, .modal-form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+        .modal-form-group input:focus, .modal-form-group textarea:focus, .modal-form-group select:focus {
+            outline: none;
+            border-color: #4338ca;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .modal-buttons .btn-save {
+            background-color: #2563eb; /* blue-600 */
+        }
+        .modal-buttons .btn-save:hover {
+            background-color: #1d4ed8; /* blue-700 */
+        }
+        .modal-buttons .btn-cancel {
+            background-color: #6b7280; /* gray-500 */
+        }
+        .modal-buttons .btn-cancel:hover {
+            background-color: #4b5563; /* gray-600 */
+        }
+        .modal-buttons .btn-delete-resource {
+            background-color: #ef4444; /* red-500 */
+            margin-right: auto; /* Aligne à gauche */
+        }
+        .modal-buttons .btn-delete-resource:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        /* Styles pour la gestion des filtres */
+        .filter-property-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #f9fafb;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #e5e7eb;
+        }
+        .filter-property-item input {
+            flex-grow: 1;
+            margin-bottom: 0 !important; /* Override modal-form-group margin */
+        }
+        .filter-property-item button {
+            background-color: #dc2626; /* red-600 */
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            font-weight: normal;
         }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <header class="bg-indigo-700 text-white p-5 shadow-lg rounded-full floating-header transition-all duration-300 ease-in-out">
-        <h1 class="text-2xl font-bold">CDI de L'ékip Teknik</h1>
-        <p class="mt-2 text-base font-light hidden md:block">Le centre de ressources pour les militantes et militants de LFI</p>
-    </header>
+    <!-- Bouton Burger -->
+    <button id="hamburger-button">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+
+    <!-- Menu Latéral -->
+    <nav id="sidebar-menu">
+        <button id="menu-btn-show-welcome" class="menu-button">Accueil</button>
+        <button id="menu-btn-show-pending" class="menu-button">Propositions en attente</button>
+        <button id="menu-btn-show-manage" class="menu-button">Gérer les ressources existantes</button>
+        <button id="menu-btn-show-config" class="menu-button">Gérer Catégories/Filtres</button>
+    </nav>
 
     <main class="container mx-auto p-4 md:p-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-indigo-700">Panneau d'Administration CDI</h1>
 
-        <div class="flex flex-wrap justify-center gap-4 mb-8">
-            <button id="btn-petitions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Pétitions</button>
-            <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Comptes utiles</button>
-            <button id="btn-sites-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Sites utiles</button>
-            <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Ouvrages</button>
-            <button id="btn-proposer" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-emerald-600 transition-colors">Proposer une ressource</button>
+        <!-- Zone d'affichage des messages généraux -->
+        <div id="general-message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+
+        <!-- Section de bienvenue (nouvelle section, visible par défaut) -->
+        <div id="welcome-section" class="text-center bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold text-indigo-700 mb-4">Bienvenue sur le Panneau d'Administration du CDI !</h2>
+            <p class="text-lg text-gray-700 mb-4">
+                Utilisez ce panneau pour gérer les ressources du Centre de Documentation et d'Information de L'ékip Teknik.
+            </p>
+            <p class="text-md text-gray-600">
+                Sélectionnez une option dans le menu latéral (cliquez sur l'icône <svg class="inline-block w-5 h-5 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg> en haut à gauche) pour commencer. Vous pourrez valider ou refuser les **propositions en attente**, modifier ou supprimer les **ressources existantes**, et gérer les **catégories et leurs propriétés de filtre**.
+            </p>
         </div>
 
-        <!-- Message display area -->
-        <div id="message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+        <!-- Section des propositions en attente -->
+        <div id="pending-suggestions-section" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-6">Propositions en attente de validation</h2>
+            <div id="pending-suggestions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>
+            </div>
+        </div>
 
-        <div id="controls-container" class="hidden">
-            <div id="search-container" class="mb-4">
-                <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors">
+        <!-- Section de gestion des ressources existantes (initialement cachée) -->
+        <div id="manage-resources-section" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-6">Gérer les ressources existantes</h2>
+            <div id="resources-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>
+            </div>
+        </div>
+
+        <!-- Section de gestion des catégories et filtres (initialement cachée) -->
+        <div id="manage-config-section" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-6">Gérer les catégories et leurs filtres</h2>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-bold mb-4">Catégories actuelles</h3>
+                <div id="categories-config-list" class="grid grid-cols-1 gap-4">
+                    <p class="text-gray-500">Chargement de la configuration...</p>
+                </div>
             </div>
 
-            <div id="filters-container" class="flex flex-wrap gap-4 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
+                <form id="add-category-form">
+                    <div class="modal-form-group">
+                        <label for="new-category-id">ID de la catégorie (ex: petitions)</label>
+                        <input type="text" id="new-category-id" required>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="new-category-label">Libellé de la catégorie (ex: Pétitions)</label>
+                        <input type="text" id="new-category-label" required>
+                    </div>
+                    <h4 class="font-semibold mt-4 mb-2">Propriétés de filtre (ID et Libellé)</h4>
+                    <div id="new-category-filter-properties">
+                        <!-- Les champs de filtre seront ajoutés ici -->
+                    </div>
+                    <button type="button" id="add-filter-property-button" class="bg-blue-500 text-white py-2 px-4 rounded-md mt-2 hover:bg-blue-600">Ajouter une propriété de filtre</button>
+                    <button type="submit" class="bg-emerald-500 text-white py-2 px-4 rounded-md mt-4 ml-2 hover:bg-emerald-600">Ajouter la catégorie</button>
+                </form>
             </div>
         </div>
 
-        <!-- Formulaire de proposition de ressource (initialement caché) -->
-        <div id="suggestion-form-container" class="hidden">
-            <h2 class="text-2xl font-bold text-center mb-4">Proposer une nouvelle ressource</h2>
-            <form id="suggestion-form" class="bg-white p-8 rounded-lg shadow-md max-w-xl mx-auto">
-                <div class="mb-4">
-                    <label for="suggestion-title" class="block text-gray-700 font-semibold mb-2">Titre</label>
-                    <input type="text" id="suggestion-title" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="suggestion-description" class="block text-gray-700 font-semibold mb-2">Description</label>
-                    <textarea id="suggestion-description" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" rows="3" required></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="suggestion-url" class="block text-gray-700 font-semibold mb-2">URL</label>
-                    <input type="url" id="suggestion-url" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="suggestion-category" class="block text-gray-700 font-semibold mb-2">Catégorie</label>
-                    <select id="suggestion-category" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
-                        <option value="">Sélectionnez une catégorie</option>
-                        <option value="petitions">Pétition</option>
-                        <option value="comptes-utiles">Compte utile</option>
-                        <option value="sites-utiles">Site utile</option>
-                        <option value="ouvrages">Ouvrage</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-emerald-600 transition-colors">Envoyer la proposition</button>
-            </form>
+
+        <!-- Modal d'édition de ressource (initialement caché) -->
+        <div id="edit-resource-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close-button" id="close-resource-modal-button">&times;</button>
+                <h3 class="text-xl font-bold mb-4 text-center text-indigo-700">Modifier la ressource</h3>
+                <form id="edit-resource-form">
+                    <input type="hidden" id="edit-resource-id">
+                    <div class="modal-form-group">
+                        <label for="edit-title">Titre</label>
+                        <input type="text" id="edit-title" required>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="edit-description">Description</label>
+                        <textarea id="edit-description" rows="3" required></textarea>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="edit-url">URL</label>
+                        <input type="url" id="edit-url" required>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="edit-category">Catégorie</label>
+                        <select id="edit-category" required>
+                            <!-- Les options seront chargées dynamiquement -->
+                        </select>
+                    </div>
+                    <!-- Champs spécifiques pour l'édition (générés dynamiquement) -->
+                    <div id="edit-specific-fields"></div>
+
+                    <div class="modal-buttons">
+                        <button type="button" id="delete-resource-button" class="btn-delete-resource">Supprimer la ressource</button>
+                        <button type="button" id="cancel-edit-button" class="btn-cancel">Annuler</button>
+                        <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
-
-        <div id="content-container" class="grid grid-cols-1 gap-6">
-            <div class="col-span-full text-center text-gray-500 text-xl mt-12">
-                <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
+        <!-- Modal d'édition de catégorie (initialement caché) -->
+        <div id="edit-category-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close-button" id="close-category-modal-button">&times;</button>
+                <h3 class="text-xl font-bold mb-4 text-center text-indigo-700">Modifier les filtres de la catégorie</h3>
+                <form id="edit-category-form">
+                    <input type="hidden" id="edit-category-key">
+                    <div class="modal-form-group">
+                        <label for="edit-category-modal-label">Libellé de la catégorie</label>
+                        <input type="text" id="edit-category-modal-label" disabled> <!-- L'ID de la catégorie n'est pas modifiable -->
+                    </div>
+                    <h4 class="font-semibold mt-4 mb-2">Propriétés de filtre</h4>
+                    <div id="edit-category-filter-properties-list">
+                        <!-- Les champs de filtre existants seront affichés ici -->
+                    </div>
+                    <button type="button" id="add-edit-filter-property-button" class="bg-blue-500 text-white py-2 px-4 rounded-md mt-2 hover:bg-blue-600">Ajouter une propriété de filtre</button>
+                    <div class="modal-buttons">
+                        <button type="button" id="cancel-category-edit-button" class="btn-cancel">Annuler</button>
+                        <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                    </div>
+                </form>
             </div>
         </div>
 
     </main>
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
+        // Importation des fonctions nécessaires depuis les SDK Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, deleteDoc, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
-        // Your web app's Firebase configuration
+        // Votre configuration Firebase (DOIT être la même que dans votre index.html)
         const firebaseConfig = {
             apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
             authDomain: "cdi-lfi.firebaseapp.com",
@@ -119,274 +442,684 @@
             measurementId: "G-EMXFSRL9W0"
         };
 
-        // Initialize Firebase
+        // Initialisation de Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const analytics = getAnalytics(app); // Analytics initialized but not actively used in this script
+        const analytics = getAnalytics(app);
 
-        const contentData = {
-            petitions: [
-                { title: "Pétition pour la 6ème République", description: "Cette pétition vise à la convocation d'une Assemblée constituante pour la 6e République.", url: "https://petitions.assemblee-nationale.fr/initiatives/i-2793", platform: "petitions.assemblee-nationale.fr", struggle: "Politique" },
-                { title: "Non à la Loi Duplomb — Pour la santé, la sécurité, l’intelligence collective.", description: "La Loi Duplomb est une aberration scientifique, éthique, environnementale et sanitaire. Elle représente une attaque frontale contre la santé publique, la biodiversité, la cohérence des politiques climatiques, la sécurité alimentaire, et le bon sens.", url: "https://petitions.assemblee-nationale.fr/initiatives/i-3014", platform: "petitions.assemblee-nationale.fr", struggle: "Santé" },
-                { title: "Budget : les sacrifices pour le monde du travail ça suffit !", description: "Pas question que ce soient encore les travailleuses et travailleurs, les demandeurs d’emploi, les jeunes et les retraité·es qui payent la facture, à la fois financièrement, mais aussi dans une flexibilité encore intensifiée !", url: "https://www.change.org/p/budget-les-sacrifices-pour-le-monde-du-travail-%C3%A7a-suffit", platform: "Change.org", struggle: "Social" },
-            ],
-            "comptes-utiles": [
-                { title: "La France insoumise", description: "Le compte officiel du mouvement sur X (Twitter).", url: "https://twitter.com/FranceInsoumise", network: "Twitter" },
-                { title: "Jean-Luc Mélenchon", description: "Le compte personnel de Jean-Luc Mélenchon sur X.", url: "https://twitter.com/JLMelenchon", network: "Twitter" },
-                { title: "LFI sur Facebook", description: "Suivez l'actualité du mouvement sur la page officielle.", url: "https://www.facebook.com/lafranceinsoumise", network: "Facebook" },
-                { title: "Le Média TV", description: "La chaîne YouTube pour des analyses et des reportages engagés.", url: "https://www.youtube.com/@lemediatv", network: "YouTube" },
-                { title: "Avenir en Commun", description: "La page Facebook pour l'actualité et les événements du programme.", url: "https://www.facebook.com/avenir.en.commun", network: "Facebook" },
-            ],
-            "sites-utiles": [
-                { title: "Le site officiel de LFI", description: "Accédez à toutes les informations, aux programmes et aux actualités.", url: "https://lafranceinsoumise.fr", type: "Site officiel" },
-                { title: "Le Blog de Jean-Luc Mélenchon", description: "Retrouvez les analyses et les tribunes du leader de LFI.", url: "https://melenchon.fr", type: "Blog personnel" },
-                { title: "L'insoumission.fr", description: "Le journal des insoumis pour une information alternative.", url: "https://linsoumission.fr", type: "Journal" },
-                { title: "Programme l'Avenir en Commun", description: "Consultez le programme pour l'élection présidentielle de 2022.", url: "https://lafranceinsoumise.fr/programme/", type: "Programme officiel" },
-                { title: "Mediapart", description: "Média d'investigation indépendant.", url: "https://www.mediapart.fr", type: "Journal" }
-            ],
-            ouvrages: [
-                { title: "L'Ère du peuple", description: "Livre de Jean-Luc Mélenchon analysant la crise politique actuelle.", url: "https://www.placedeslibraires.fr/livre/9782749925327-l-ere-du-peuple-jean-luc-melenchon/", publisher: "Éditions du Seuil" },
-                { title: "Révolution", description: "Le programme complet de LFI pour la transformation de la société française.", url: "https://lafranceinsoumise.fr/programme/", publisher: "Éditions du Détour" },
-                { title: "Le Choix de l'insoumission", description: "Un recueil d'articles et d'analyses pour comprendre le mouvement.", url: "https://www.amazon.fr/choix-linsoumission-Jean-Luc-Melenchon/dp/2377221379", publisher: "Éditions du Seuil" },
-                { title: "La Gauche des faits", description: "Un ouvrage collectif pour déconstruire les mythes de l'économie néolibérale.", url: "https://www.placedeslibraires.fr/livre/9782707198188-la-gauche-des-faits-collectif/", publisher: "La Découverte" },
-                { title: "L'insurrection qui vient", description: "Réflexion sur la crise de la modernité et les formes de résistance.", url: "https://www.placedeslibraires.fr/livre/9782020986961-l-insurrection-qui-vient-comite-invisible/", publisher: "La Fabrique" },
-                { title: "Pour un matérialisme historique", description: "Essai de Louis Althusser sur la théorie marxiste.", url: "https://www.placedeslibraires.fr/livre/9782707153675-pour-un-materialisme-historique-louis-althusser/", publisher: "La Découverte" }
-            ]
-        };
+        // Références aux éléments DOM
+        const hamburgerButton = document.getElementById('hamburger-button');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const menuButtons = document.querySelectorAll('.menu-button'); 
 
-        const contentContainer = document.getElementById('content-container');
-        const controlsContainer = document.getElementById('controls-container');
-        const searchInput = document.getElementById('search-input');
-        const filtersContainer = document.getElementById('filters-container');
-        const categoryButtons = document.querySelectorAll('.btn');
-        const proposeButton = document.getElementById('btn-proposer');
-        const suggestionFormContainer = document.getElementById('suggestion-form-container');
-        const suggestionForm = document.getElementById('suggestion-form');
-        const messageArea = document.getElementById('message-area');
+        const generalMessageArea = document.getElementById('general-message-area');
 
-        let currentCategory = null;
+        const welcomeSection = document.getElementById('welcome-section');
+        const pendingSuggestionsSection = document.getElementById('pending-suggestions-section');
+        const manageResourcesSection = document.getElementById('manage-resources-section');
+        const manageConfigSection = document.getElementById('manage-config-section');
+        
+        const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
+        const resourcesList = document.getElementById('resources-list');
+        const categoriesConfigList = document.getElementById('categories-config-list');
+        
+        const editResourceModal = document.getElementById('edit-resource-modal');
+        const editResourceForm = document.getElementById('edit-resource-form');
+        const closeResourceModalButton = document.getElementById('close-resource-modal-button');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+        const deleteResourceButton = document.getElementById('delete-resource-button');
+
+        // Champs du formulaire d'édition de ressource
+        const editResourceId = document.getElementById('edit-resource-id');
+        const editTitle = document.getElementById('edit-title');
+        const editDescription = document.getElementById('edit-description');
+        const editUrl = document.getElementById('edit-url');
+        const editCategory = document.getElementById('edit-category');
+        const editSpecificFieldsContainer = document.getElementById('edit-specific-fields');
+
+        // Formulaire d'ajout de catégorie
+        const addCategoryForm = document.getElementById('add-category-form');
+        const newCategoryIdInput = document.getElementById('new-category-id');
+        const newCategoryLabelInput = document.getElementById('new-category-label');
+        const newCategoryFilterPropertiesContainer = document.getElementById('new-category-filter-properties');
+        const addFilterPropertyButton = document.getElementById('add-filter-property-button');
+
+        // Modal d'édition de catégorie
+        const editCategoryModal = document.getElementById('edit-category-modal');
+        const editCategoryForm = document.getElementById('edit-category-form');
+        const closeCategoryModalButton = document.getElementById('close-category-modal-button');
+        const cancelCategoryEditButton = document.getElementById('cancel-category-edit-button');
+        const editCategoryKeyInput = document.getElementById('edit-category-key');
+        const editCategoryModalLabelInput = document.getElementById('edit-category-modal-label');
+        const editCategoryFilterPropertiesList = document.getElementById('edit-category-filter-properties-list');
+        const addEditFilterPropertyButton = document.getElementById('add-edit-filter-property-button');
+
+
+        let unsubscribePendingSnapshot = null;
+        let unsubscribeResourcesSnapshot = null;
+        let unsubscribeConfigSnapshot = null;
+
+        // Variable pour stocker la configuration des catégories et filtres chargée depuis Firestore
+        let categoryConfigData = {};
 
         /**
-         * Displays a message in the message area.
-         * @param {string} message - The message to display.
-         * @param {string} type - The type of message ('success' or 'error').
+         * Affiche un message dans la zone de message générale.
+         * @param {string} message - Le message à afficher.
+         * @param {string} type - Le type de message ('success' ou 'error').
          */
-        function showMessage(message, type) {
-            messageArea.textContent = message;
-            messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+        function showGeneralMessage(message, type) {
+            generalMessageArea.textContent = message;
+            generalMessageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
             if (type === 'success') {
-                messageArea.classList.add('bg-green-100', 'text-green-800');
+                generalMessageArea.classList.add('bg-green-100', 'text-green-800');
             } else if (type === 'error') {
-                messageArea.classList.add('bg-red-100', 'text-red-800');
+                generalMessageArea.classList.add('bg-red-100', 'text-red-800');
             }
-            // Hide message after 5 seconds
+            // Cache le message après 5 secondes
             setTimeout(() => {
-                messageArea.classList.add('hidden');
+                generalMessageArea.classList.add('hidden');
             }, 5000);
         }
 
         /**
-         * Creates an HTML card element for a given item.
-         * @param {object} item - The data object for the card.
-         * @param {string[]} filterProperties - An array of properties to use for data attributes and display.
-         * @returns {HTMLAnchorElement} The created card element.
+         * Affiche un message directement sur une carte et le fait disparaître progressivement avec la carte.
+         * @param {HTMLElement} cardElement - L'élément de la carte sur laquelle afficher le message.
+         * @param {string} message - Le message à afficher.
+         * @param {string} type - Le type de message ('success' ou 'error').
+         * @returns {Promise<void>} Une promesse qui se résout lorsque l'animation est terminée.
          */
-        function createCard(item, filterProperties) {
-            const card = document.createElement('a');
-            card.href = item.url;
-            card.target = "_blank";
-            card.className = "card block bg-white rounded-lg shadow-md flex p-6";
+        function showCardMessage(cardElement, message, type) {
+            return new Promise(resolve => {
+                const messageArea = cardElement.querySelector('.card-message-area');
+                if (messageArea) {
+                    messageArea.textContent = message;
+                    messageArea.className = `card-message-area show ${type}`;
+                    
+                    const actionButtons = cardElement.querySelectorAll('.actions button');
+                    actionButtons.forEach(button => button.disabled = true);
 
-            filterProperties.forEach(prop => {
-                if (item[prop]) {
-                    card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
-                }
-            });
+                    setTimeout(() => {
+                        cardElement.classList.add('fade-out');
+                        void cardElement.offsetHeight; 
 
-            const mainContent = document.createElement('div');
-            mainContent.className = "flex-1 pr-4";
-            mainContent.innerHTML = `
-                <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
-                <p class="text-gray-600">${item.description}</p>
-            `;
-            card.appendChild(mainContent);
-
-            const separator = document.createElement('div');
-            separator.className = "w-px bg-gray-200 h-auto mx-4";
-            card.appendChild(separator);
-
-            const characteristics = document.createElement('div');
-            characteristics.className = "w-1/4 min-w-max text-right text-sm text-gray-500 flex-none";
-            const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
-                <div>
-                    <span class="font-medium">${prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
-                </div>
-            `).join('');
-            characteristics.innerHTML = characteristicsHtml;
-            card.appendChild(characteristics);
-            
-            return card;
-        }
-
-        /**
-         * Renders the content for a selected category.
-         * @param {string} categoryKey - The key of the category to render.
-         */
-        function renderCategory(categoryKey) {
-            // Hide the suggestion form and message area
-            suggestionFormContainer.classList.add('hidden');
-            messageArea.classList.add('hidden');
-
-            contentContainer.innerHTML = '';
-            filtersContainer.innerHTML = '';
-            controlsContainer.classList.remove('hidden');
-            contentContainer.classList.remove('hidden'); // Ensure content container is visible
-            currentCategory = categoryKey;
-            
-            searchInput.value = '';
-
-            const items = contentData[categoryKey];
-            if (!items) return;
-
-            // Determine filterable properties based on the first item in the category
-            const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
-            
-            filterProperties.forEach(prop => {
-                const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
-                
-                const filterGroup = document.createElement('div');
-                filterGroup.className = 'flex flex-col';
-                
-                const filterLabel = document.createElement('label');
-                filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
-                filterLabel.textContent = prop.charAt(0).toUpperCase() + prop.slice(1);
-                filterGroup.appendChild(filterLabel);
-                
-                const filterSelect = document.createElement('select');
-                filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
-                filterSelect.setAttribute('data-filter-property', prop);
-                filterSelect.addEventListener('change', filterContent);
-
-                const allOption = document.createElement('option');
-                allOption.value = 'all';
-                allOption.textContent = 'Tous';
-                filterSelect.appendChild(allOption);
-
-                uniqueFilters.forEach(filterValue => {
-                    const option = document.createElement('option');
-                    option.value = filterValue.toLowerCase();
-                    option.textContent = filterValue;
-                    filterSelect.appendChild(option);
-                });
-
-                filterGroup.appendChild(filterSelect);
-                filtersContainer.appendChild(filterGroup);
-            });
-
-            items.forEach(item => {
-                contentContainer.appendChild(createCard(item, filterProperties));
-            });
-        }
-
-        /**
-         * Filters the displayed content cards based on search term and selected filters.
-         */
-        function filterContent() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const cards = contentContainer.querySelectorAll('.card');
-            const filterSelects = filtersContainer.querySelectorAll('select');
-            
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
-                
-                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
-                
-                let matchesFilters = true;
-                filterSelects.forEach(select => {
-                    const prop = select.getAttribute('data-filter-property');
-                    const filterValue = select.value;
-
-                    if (filterValue !== 'all') {
-                        const cardFilterValue = card.getAttribute(`data-${prop}`);
-                        if (!cardFilterValue || cardFilterValue !== filterValue) {
-                            matchesFilters = false;
-                        }
-                    }
-                });
-                
-                if (matchesSearch && matchesFilters) {
-                    card.style.display = 'flex';
+                        const onTransitionEnd = function handler(event) {
+                            if (event.propertyName === 'opacity') {
+                                cardElement.removeEventListener('transitionend', handler);
+                                resolve(); // Résout la promesse une fois l'animation terminée
+                            }
+                        };
+                        cardElement.addEventListener('transitionend', onTransitionEnd);
+                    }, 1000);
                 } else {
-                    card.style.display = 'none';
+                    resolve(); // Résout immédiatement si pas de zone de message (cas inattendu)
                 }
             });
         }
 
         /**
-         * Shows the resource suggestion form and hides other content.
+         * Affiche la section spécifiée et cache les autres.
+         * Gère les écouteurs Firestore pour la section active.
+         * @param {string} sectionId - L'ID de la section à afficher ('welcome', 'pending', 'manage', ou 'config').
          */
-        function showProposeForm() {
-            // Deactivate all category buttons
-            categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-            // Hide main content and controls
-            controlsContainer.classList.add('hidden');
-            contentContainer.classList.add('hidden');
-            messageArea.classList.add('hidden'); // Hide any previous messages
+        function showSection(sectionId) {
+            // Désabonne tous les écouteurs de snapshot précédents
+            if (unsubscribePendingSnapshot) unsubscribePendingSnapshot();
+            if (unsubscribeResourcesSnapshot) unsubscribeResourcesSnapshot();
+            if (unsubscribeConfigSnapshot) unsubscribeConfigSnapshot();
+
+            // Cache toutes les sections
+            welcomeSection.classList.add('hidden');
+            pendingSuggestionsSection.classList.add('hidden');
+            manageResourcesSection.classList.add('hidden');
+            manageConfigSection.classList.add('hidden');
+            editResourceModal.classList.remove('show');
+            editCategoryModal.classList.remove('show');
+            generalMessageArea.classList.add('hidden');
             
-            // Show the suggestion form
-            suggestionFormContainer.classList.remove('hidden');
-            suggestionForm.reset(); // Clear form fields
-        }
+            // Masque le menu latéral
+            sidebarMenu.classList.remove('open');
 
-        /**
-         * Handles the submission of the resource suggestion form, sending data to Firestore.
-         * @param {Event} event - The form submission event.
-         */
-        async function handleSuggestionSubmit(event) {
-            event.preventDefault(); // Prevent the default form submission
+            // Met à jour les classes des boutons du menu latéral
+            menuButtons.forEach(btn => btn.classList.remove('active-section-button'));
+            const activeButton = document.getElementById(`menu-btn-show-${sectionId}`);
+            if (activeButton) {
+                activeButton.classList.add('active-section-button');
+            }
 
-            const title = document.getElementById('suggestion-title').value;
-            const description = document.getElementById('suggestion-description').value;
-            const url = document.getElementById('suggestion-url').value;
-            const category = document.getElementById('suggestion-category').value;
-
-            const newSuggestion = {
-                title,
-                description,
-                url,
-                category,
-                createdAt: serverTimestamp(), // Adds a server-generated timestamp
-                status: 'pending' // Initial status for review
-            };
-
-            try {
-                // Add a new document to the 'suggestions' collection
-                await addDoc(collection(db, 'suggestions'), newSuggestion);
-                showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
-                suggestionForm.reset(); // Clear the form
-                // Optionally, after submission, you might want to switch back to a category view
-                // For now, it stays on the form with a success message.
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');
+            // Affiche la section correcte
+            if (sectionId === 'welcome') {
+                welcomeSection.classList.remove('hidden');
+            } else if (sectionId === 'pending') {
+                pendingSuggestionsSection.classList.remove('hidden');
+                loadPendingSuggestions();
+            } else if (sectionId === 'manage') {
+                manageResourcesSection.classList.remove('hidden');
+                loadAndManageResources();
+            } else if (sectionId === 'config') {
+                manageConfigSection.classList.remove('hidden');
+                loadCategoriesAndFilters();
             }
         }
 
-        // Event Listeners
-        categoryButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-                button.classList.add('active-button');
+        /**
+         * Charge et affiche les propositions en attente de la collection 'suggestions'.
+         */
+        function loadPendingSuggestions() {
+            pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>';
+
+            unsubscribePendingSnapshot = onSnapshot(collection(db, 'suggestions'), (querySnapshot) => {
+                pendingSuggestionsList.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune proposition en attente pour le moment.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const suggestion = docSnap.data();
+                    const suggestionId = docSnap.id;
+
+                    const card = document.createElement('div');
+                    card.className = 'pending-card';
+                    card.setAttribute('data-id', suggestionId);
+
+                    // Utiliser categoryConfigData[suggestion.category].filters pour les propriétés d'affichage
+                    const displayProperties = categoryConfigData[suggestion.category] && categoryConfigData[suggestion.category].filters ? 
+                        categoryConfigData[suggestion.category].filters.map(f => f.id) : [];
+
+                    card.innerHTML = `
+                        <h3 class="text-indigo-800">${suggestion.title}</h3>
+                        <p class="text-gray-600">${suggestion.description}</p>
+                        <p class="text-gray-500 text-sm"><strong>URL:</strong> <a href="${suggestion.url}" target="_blank" class="text-blue-600 hover:underline">${suggestion.url}</a></p>
+                        <p class="text-gray-500 text-sm"><strong>Catégorie:</strong> ${categoryConfigData[suggestion.category] ? categoryConfigData[suggestion.category].label : suggestion.category}</p>
+                        ${displayProperties.map(key => `
+                            <p class="text-gray-500 text-sm"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${suggestion[key] || 'N/A'}</p>
+                        `).join('')}
+                        <div class="actions">
+                            <button class="btn-validate" data-id="${suggestionId}">Valider</button>
+                            <button class="btn-reject" data-id="${suggestionId}">Refuser</button>
+                        </div>
+                        <div class="card-message-area"></div>
+                    `;
+                    pendingSuggestionsList.appendChild(card);
+
+                    card.querySelector('.btn-validate').addEventListener('click', () => handleValidateSuggestion(suggestionId, suggestion, card));
+                    card.querySelector('.btn-reject').addEventListener('click', () => handleRejectSuggestion(suggestionId, card));
+                });
+            }, (error) => {
+                console.error("Error loading pending suggestions: ", error);
+                pendingSuggestionsList.innerHTML = '<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des propositions. Vérifiez les règles de sécurité Firestore.</p>';
+            });
+        }
+
+        /**
+         * Charge et affiche les ressources existantes de la collection 'resources'.
+         */
+        function loadAndManageResources() {
+            resourcesList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>';
+
+            unsubscribeResourcesSnapshot = onSnapshot(collection(db, 'resources'), (querySnapshot) => {
+                resourcesList.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    resourcesList.innerHTML = '<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune ressource existante pour le moment.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const resource = docSnap.data();
+                    const resourceId = docSnap.id;
+
+                    const card = document.createElement('div');
+                    card.className = 'resource-card';
+                    card.setAttribute('data-id', resourceId);
+
+                    // Utiliser categoryConfigData[resource.category].filters pour les propriétés d'affichage
+                    const displayProperties = categoryConfigData[resource.category] && categoryConfigData[resource.category].filters ? 
+                        categoryConfigData[resource.category].filters.map(f => f.id) : [];
+
+                    card.innerHTML = `
+                        <h3 class="text-indigo-800">${resource.title}</h3>
+                        <p class="text-gray-600">${resource.description}</p>
+                        <p class="text-gray-500 text-sm"><strong>URL:</strong> <a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.url}</a></p>
+                        <p class="text-gray-500 text-sm"><strong>Catégorie:</strong> ${categoryConfigData[resource.category] ? categoryConfigData[resource.category].label : resource.category}</p>
+                        ${displayProperties.map(key => `
+                            <p class="text-gray-500 text-sm"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${resource[key] || 'N/A'}</p>
+                        `).join('')}
+                        <div class="actions">
+                            <button class="btn-edit" data-id="${resourceId}">Modifier</button>
+                            <button class="btn-delete" data-id="${resourceId}">Supprimer</button>
+                        </div>
+                        <div class="card-message-area"></div>
+                    `;
+                    resourcesList.appendChild(card);
+
+                    card.querySelector('.btn-edit').addEventListener('click', () => openEditResourceModal(resourceId, resource));
+                    card.querySelector('.btn-delete').addEventListener('click', () => handleDeleteResource(resourceId, card));
+                });
+            }, (error) => {
+                console.error("Error loading resources: ", error);
+                resourcesList.innerHTML = '<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des ressources. Vérifiez les règles de sécurité Firestore.</p>';
+            });
+        }
+
+        /**
+         * Charge la configuration des catégories et filtres depuis Firestore.
+         */
+        async function loadCategoriesAndFilters() {
+            categoriesConfigList.innerHTML = '<p class="text-gray-500">Chargement de la configuration...</p>';
+            
+            editCategory.innerHTML = '';
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Sélectionnez une catégorie';
+            editCategory.appendChild(defaultOption);
+
+
+            unsubscribeConfigSnapshot = onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
+                if (docSnap.exists()) {
+                    categoryConfigData = docSnap.data();
+                    categoriesConfigList.innerHTML = '';
+
+                    editCategory.innerHTML = '';
+                    const defaultEditOption = document.createElement('option');
+                    defaultEditOption.value = '';
+                    defaultEditOption.textContent = 'Sélectionnez une catégorie';
+                    editCategory.appendChild(defaultEditOption);
+
+                    for (const categoryKey in categoryConfigData) {
+                        if (categoryConfigData.hasOwnProperty(categoryKey)) {
+                            const categoryInfo = categoryConfigData[categoryKey]; // Nouvelle structure
+                            const categoryFilters = categoryInfo.filters || []; // Récupérer les filtres
+
+                            const option = document.createElement('option');
+                            option.value = categoryKey;
+                            option.textContent = categoryInfo.label || categoryKey; // Afficher le libellé
+                            editCategory.appendChild(option);
+
+                            const card = document.createElement('div');
+                            card.className = 'category-config-card';
+                            card.innerHTML = `
+                                <h3 class="text-indigo-800">${categoryInfo.label || categoryKey}</h3>
+                                <p class="text-gray-600">Filtres: ${categoryFilters.map(f => `${f.label} (${f.id})`).join(', ') || 'Aucun'}</p>
+                                <div class="actions">
+                                    <button class="btn-edit-category" data-id="${categoryKey}">Modifier</button>
+                                    <button class="btn-delete-category" data-id="${categoryKey}">Supprimer</button>
+                                </div>
+                            `;
+                            categoriesConfigList.appendChild(card);
+
+                            card.querySelector('.btn-edit-category').addEventListener('click', () => openEditCategoryModal(categoryKey, categoryInfo));
+                            card.querySelector('.btn-delete-category').addEventListener('click', () => handleDeleteCategory(categoryKey, card));
+                        }
+                    }
+                } else {
+                    categoriesConfigList.innerHTML = '<p class="text-gray-500">Aucune configuration de catégorie trouvée. Ajoutez-en une !</p>';
+                    categoryConfigData = {};
+                }
+            }, (error) => {
+                console.error("Error loading category config: ", error);
+                categoriesConfigList.innerHTML = '<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement de la configuration des catégories. Vérifiez les règles de sécurité Firestore.</p>';
+            });
+        }
+
+
+        /**
+         * Ouvre le modal d'édition et le pré-remplit avec les données de la ressource.
+         * @param {string} resourceId - L'ID du document de la ressource.
+         * @param {object} resourceData - Les données de la ressource.
+         */
+        function openEditResourceModal(resourceId, resourceData) {
+            editResourceId.value = resourceId;
+            editTitle.value = resourceData.title;
+            editDescription.value = resourceData.description;
+            editUrl.value = resourceData.url;
+            editCategory.value = resourceData.category;
+
+            generateEditSpecificFields(resourceData.category, resourceData);
+
+            editResourceModal.classList.add('show');
+        }
+
+        /**
+         * Gère la génération des champs spécifiques dans le modal d'édition de ressource.
+         * @param {string} category - La catégorie sélectionnée.
+         * @param {object} resourceData - Les données de la ressource pour pré-remplir.
+         */
+        function generateEditSpecificFields(category, resourceData = {}) {
+            editSpecificFieldsContainer.innerHTML = '';
+            // Accéder aux filtres via la propriété 'filters' de l'objet catégorie
+            const fields = categoryConfigData[category] && categoryConfigData[category].filters ? categoryConfigData[category].filters : [];
+            if (fields) {
+                fields.forEach(field => {
+                    const div = document.createElement('div');
+                    div.className = 'modal-form-group';
+                    div.innerHTML = `
+                        <label for="edit-${field.id}">${field.label}</label>
+                        <input type="${field.type || 'text'}" id="edit-${field.id}" value="${resourceData[field.id] || ''}" placeholder="${field.placeholder || ''}">
+                    `;
+                    editSpecificFieldsContainer.appendChild(div);
+                });
+            }
+        }
+
+        /**
+         * Gère la soumission du formulaire de modification de ressource.
+         * @param {Event} event - L'événement de soumission.
+         */
+        async function handleUpdateResource(event) {
+            event.preventDefault();
+            const resourceId = editResourceId.value;
+            const updatedData = {
+                title: editTitle.value,
+                description: editDescription.value,
+                url: editUrl.value,
+                category: editCategory.value
+            };
+
+            const category = editCategory.value;
+            // Accéder aux filtres via la propriété 'filters' de l'objet catégorie
+            const fields = categoryConfigData[category] && categoryConfigData[category].filters ? categoryConfigData[category].filters : [];
+            if (fields) {
+                fields.forEach(field => {
+                    const inputElement = document.getElementById(`edit-${field.id}`);
+                    if (inputElement) {
+                        updatedData[field.id] = inputElement.value;
+                    }
+                });
+            }
+
+            try {
+                await updateDoc(doc(db, 'resources', resourceId), updatedData);
+                alert('Ressource mise à jour avec succès !');
+                editResourceModal.classList.remove('show');
+            } catch (e) {
+                console.error("Error updating resource: ", e);
+                alert("Erreur lors de la mise à jour de la ressource.");
+            }
+        }
+
+        /**
+         * Gère la validation d'une suggestion : l'ajoute aux ressources et la supprime des suggestions.
+         * @param {string} suggestionId - L'ID du document de suggestion.
+         * @param {object} suggestionData - Les données de la suggestion à valider.
+         * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
+         */
+        async function handleValidateSuggestion(suggestionId, suggestionData, cardElement) {
+            try {
+                await showCardMessage(cardElement, 'Validée !', 'success');
+
+                const resourceData = {
+                    title: suggestionData.title,
+                    description: suggestionData.description,
+                    url: suggestionData.url,
+                    category: suggestionData.category
+                };
+
+                // Accéder aux filtres via la propriété 'filters' de l'objet catégorie
+                const specificFields = categoryConfigData[suggestionData.category] && categoryConfigData[suggestionData.category].filters ? categoryConfigData[suggestionData.category].filters : [];
+                if (specificFields) {
+                    specificFields.forEach(field => {
+                        if (suggestionData[field.id]) { 
+                            resourceData[field.id] = suggestionData[field.id];
+                        }
+                    });
+                }
                 
-                const categoryKey = button.id.replace('btn-', '');
-                renderCategory(categoryKey);
+                await addDoc(collection(db, 'resources'), resourceData);
+                await deleteDoc(doc(db, 'suggestions', suggestionId));
+            } catch (e) {
+                console.error("Error validating suggestion: ", e);
+                showGeneralMessage("Erreur lors de la validation de la proposition.", 'error');
+            }
+        }
+
+        /**
+         * Gère le rejet d'une suggestion : la supprime des suggestions.
+         * @param {string} suggestionId - L'ID du document de suggestion.
+         * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
+         */
+        async function handleRejectSuggestion(suggestionId, cardElement) {
+            try {
+                await showCardMessage(cardElement, 'Refusée !', 'error');
+                await deleteDoc(doc(db, 'suggestions', suggestionId));
+            } catch (e) {
+                console.error("Error rejecting suggestion: ", e);
+                showGeneralMessage("Erreur lors du refus de la proposition.", 'error');
+            }
+        }
+
+        /**
+         * Gère la suppression d'une ressource existante.
+         * @param {string} resourceId - L'ID du document de la ressource à supprimer.
+         * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la ressource.
+         */
+        async function handleDeleteResource(resourceId, cardElement) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ?')) {
+                return;
+            }
+
+            try {
+                await showCardMessage(cardElement, 'Supprimée !', 'error');
+                await deleteDoc(doc(db, 'resources', resourceId));
+                showGeneralMessage('Ressource supprimée avec succès !', 'success');
+            } catch (e) {
+                console.error("Error deleting resource: ", e);
+                showGeneralMessage("Erreur lors de la suppression de la ressource.", 'error');
+            }
+        }
+
+        /**
+         * Ajoute un nouveau champ de propriété de filtre au formulaire d'ajout de catégorie.
+         */
+        function addFilterPropertyField(container, initialId = '', initialLabel = '') {
+            const div = document.createElement('div');
+            div.className = 'filter-property-item';
+            div.innerHTML = `
+                <input type="text" placeholder="ID (ex: platform)" value="${initialId}" class="filter-id-input" required>
+                <input type="text" placeholder="Libellé (ex: Plateforme)" value="${initialLabel}" class="filter-label-input" required>
+                <button type="button" class="bg-red-500 text-white py-1 px-2 rounded-md remove-filter-property-button">X</button>
+            `;
+            container.appendChild(div);
+
+            div.querySelector('.remove-filter-property-button').addEventListener('click', () => {
+                div.remove();
+            });
+        }
+
+        /**
+         * Gère la soumission du formulaire d'ajout de catégorie.
+         * @param {Event} event - L'événement de soumission.
+         */
+        async function handleAddCategory(event) {
+            event.preventDefault();
+            const newCategoryId = newCategoryIdInput.value.trim();
+            const newCategoryLabel = newCategoryLabelInput.value.trim();
+
+            if (!newCategoryId || !newCategoryLabel) {
+                showGeneralMessage('Veuillez remplir l\'ID et le libellé de la catégorie.', 'error');
+                return;
+            }
+
+            const filterProperties = [];
+            newCategoryFilterPropertiesContainer.querySelectorAll('.filter-property-item').forEach(item => {
+                const idInput = item.querySelector('.filter-id-input');
+                const labelInput = item.querySelector('.filter-label-input');
+                if (idInput.value.trim() && labelInput.value.trim()) {
+                    filterProperties.push({ id: idInput.value.trim(), label: labelInput.value.trim(), type: 'text' });
+                }
+            });
+
+            try {
+                const configDocRef = doc(db, 'appConfig', 'categoriesAndFilters');
+                const configDocSnap = await getDoc(configDocRef);
+                let currentConfig = {};
+                if (configDocSnap.exists()) {
+                    currentConfig = configDocSnap.data();
+                }
+
+                if (currentConfig[newCategoryId]) {
+                    showGeneralMessage(`La catégorie avec l'ID "${newCategoryId}" existe déjà.`, 'error');
+                    return;
+                }
+
+                // Nouvelle structure : { label: "...", filters: [...] }
+                currentConfig[newCategoryId] = {
+                    label: newCategoryLabel,
+                    filters: filterProperties
+                };
+
+                await setDoc(configDocRef, currentConfig);
+                showGeneralMessage('Catégorie ajoutée avec succès !', 'success');
+                addCategoryForm.reset();
+                newCategoryFilterPropertiesContainer.innerHTML = '';
+            } catch (e) {
+                console.error("Error adding category: ", e);
+                showGeneralMessage("Erreur lors de l'ajout de la catégorie.", 'error');
+            }
+        }
+
+        /**
+         * Ouvre le modal d'édition de catégorie et le pré-remplit.
+         * @param {string} categoryKey - L'ID de la catégorie à modifier.
+         * @param {object} categoryInfo - Les informations complètes de la catégorie (label et filters).
+         */
+        function openEditCategoryModal(categoryKey, categoryInfo) {
+            editCategoryKeyInput.value = categoryKey;
+            editCategoryModalLabelInput.value = categoryInfo.label || categoryKey; // Afficher le libellé
+            editCategoryFilterPropertiesList.innerHTML = '';
+
+            const filters = categoryInfo.filters || []; // Récupérer les filtres
+            filters.forEach(filter => {
+                addFilterPropertyField(editCategoryFilterPropertiesList, filter.id, filter.label);
+            });
+
+            editCategoryModal.classList.add('show');
+        }
+
+        /**
+         * Gère la soumission du formulaire de modification de catégorie.
+         * @param {Event} event - L'événement de soumission.
+         */
+        async function handleUpdateCategory(event) {
+            event.preventDefault();
+            const categoryKey = editCategoryKeyInput.value;
+            const updatedFilters = [];
+            editCategoryFilterPropertiesList.querySelectorAll('.filter-property-item').forEach(item => {
+                const idInput = item.querySelector('.filter-id-input');
+                const labelInput = item.querySelector('.filter-label-input');
+                if (idInput.value.trim() && labelInput.value.trim()) {
+                    updatedFilters.push({ id: idInput.value.trim(), label: labelInput.value.trim(), type: 'text' });
+                }
+            });
+
+            try {
+                const configDocRef = doc(db, 'appConfig', 'categoriesAndFilters');
+                const configDocSnap = await getDoc(configDocRef);
+                let currentConfig = {};
+                if (configDocSnap.exists()) {
+                    currentConfig = configDocSnap.data();
+                }
+
+                // Mettre à jour seulement la partie `filters` de l'objet catégorie existant
+                if (currentConfig[categoryKey]) {
+                    currentConfig[categoryKey].filters = updatedFilters;
+                } else {
+                    // Si la catégorie n'existe pas (cas improbable ici), la recréer avec un libellé par défaut
+                    currentConfig[categoryKey] = {
+                        label: categoryKey, // Utiliser l'ID comme libellé par défaut
+                        filters: updatedFilters
+                    };
+                }
+
+                await setDoc(configDocRef, currentConfig);
+                showGeneralMessage('Catégorie mise à jour avec succès !', 'success');
+                editCategoryModal.classList.remove('show');
+            } catch (e) {
+                console.error("Error updating category: ", e);
+                showGeneralMessage("Erreur lors de la mise à jour de la catégorie.", 'error');
+            }
+        }
+
+        /**
+         * Gère la suppression d'une catégorie.
+         * @param {string} categoryKey - L'ID de la catégorie à supprimer.
+         * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la catégorie.
+         */
+        async function handleDeleteCategory(categoryKey, cardElement) {
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${categoryKey}" ? Cela ne supprimera PAS les ressources existantes de cette catégorie.`)) {
+                return;
+            }
+
+            try {
+                await showCardMessage(cardElement, 'Supprimée !', 'error');
+                const configDocRef = doc(db, 'appConfig', 'categoriesAndFilters');
+                const configDocSnap = await getDoc(configDocRef);
+                if (configDocSnap.exists()) {
+                    const currentConfig = configDocSnap.data();
+                    delete currentConfig[categoryKey];
+                    await setDoc(configDocRef, currentConfig);
+                    showGeneralMessage('Catégorie supprimée avec succès !', 'success');
+                }
+            } catch (e) {
+                console.error("Error deleting category: ", e);
+                showGeneralMessage("Erreur lors de la suppression de la catégorie.", 'error');
+            }
+        }
+
+        // Écouteurs d'événements pour le bouton burger et les éléments du menu
+        hamburgerButton.addEventListener('click', () => {
+            sidebarMenu.classList.toggle('open');
+        });
+
+        menuButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const sectionId = button.id.replace('menu-btn-show-', '');
+                showSection(sectionId);
             });
         });
 
-        proposeButton.addEventListener('click', showProposeForm);
-        searchInput.addEventListener('keyup', filterContent);
-        suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+        // Écouteurs pour le modal d'édition de ressource
+        closeResourceModalButton.addEventListener('click', () => editResourceModal.classList.remove('show'));
+        cancelEditButton.addEventListener('click', () => editResourceModal.classList.remove('show'));
+        editResourceForm.addEventListener('submit', handleUpdateResource);
+        editCategory.addEventListener('change', () => generateEditSpecificFields(editCategory.value));
+        deleteResourceButton.addEventListener('click', async () => {
+            const resourceId = editResourceId.value;
+            const cardElement = document.querySelector(`.resource-card[data-id="${resourceId}"]`);
+            if (cardElement) {
+                editResourceModal.classList.remove('show'); 
+                await handleDeleteResource(resourceId, cardElement);
+            }
+        });
+
+        // Écouteurs pour le formulaire d'ajout de catégorie
+        addFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(newCategoryFilterPropertiesContainer));
+        addCategoryForm.addEventListener('submit', handleAddCategory);
+
+        // Écouteurs pour le modal d'édition de catégorie
+        closeCategoryModalButton.addEventListener('click', () => editCategoryModal.classList.remove('show'));
+        cancelCategoryEditButton.addEventListener('click', () => editCategoryModal.classList.remove('show'));
+        addEditFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(editCategoryFilterPropertiesList));
+        editCategoryForm.addEventListener('submit', handleUpdateCategory);
+
+
+        // Charge la section de bienvenue par défaut au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Charge la configuration des catégories en premier
+            onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
+                if (docSnap.exists()) {
+                    categoryConfigData = docSnap.data();
+                } else {
+                    categoryConfigData = {};
+                }
+                showSection('welcome'); // Affiche l'écran de bienvenue une fois la config chargée
+            }, (error) => {
+                console.error("Error initializing category config: ", error);
+                categoryConfigData = {};
+                showSection('welcome'); // Tente d'afficher même en cas d'erreur de config
+            });
+        });
 
     </script>
 </body>

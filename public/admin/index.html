@@ -86,14 +86,14 @@
       const res = await fetch('/api/propositions');
       if (!res.ok) {
         document.getElementById('login-message').textContent = "Erreur de connexion à l'API.";
-        return;
+        return false;
       }
       const data = await res.json();
       const list = document.getElementById('propositions-list');
       list.innerHTML = '';
       if (data.length === 0) {
         list.innerHTML = '<div class="text-center text-gray-500 text-lg">Aucune proposition en attente.</div>';
-        return;
+        return true;
       }
       data.forEach(p => {
         const card = document.createElement('div');
@@ -112,12 +112,23 @@
         `;
         list.appendChild(card);
       });
+      return true;
     }
 
     document.getElementById('login-btn').onclick = async () => {
       adminPass = document.getElementById('password').value;
-      localStorage.setItem('adminPass', adminPass); // zapisz hasło
       document.getElementById('login-message').textContent = "";
+      // Teste le mot de passe en faisant une action bidon sur moderer.js
+      const testRes = await fetch('/api/moderer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: 0, action: 'test', password: adminPass })
+      });
+      if (testRes.status === 401) {
+        document.getElementById('login-message').textContent = "Mot de passe incorrect.";
+        return;
+      }
+      localStorage.setItem('adminPass', adminPass);
       await fetchPropositions();
       showAdminPanel();
     };

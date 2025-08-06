@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - CDI de L'ékip Teknik</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: auto; background: #f7f7f7; padding: 20px; }
+    input, textarea, button { margin-bottom: 8px; padding: 6px; width: 100%; }
+    button { width: auto; margin-right: 8px; }
+    hr { margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <h1>Panneau d'administration</h1>
+  <div id="login">
+    <input type="password" id="password" placeholder="Mot de passe admin" />
+    <button onclick="login()">Se connecter</button>
+    <div id="login-message"></div>
+  </div>
+  <div id="admin-panel" style="display:none;">
+    <ul id="propositions"></ul>
+    <div id="message"></div>
+  </div>
+  <script>
+    let adminPass = "";
+    function login() {
+      adminPass = document.getElementById('password').value;
+      fetch('/api/propositions')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('login').style.display = 'none';
+          document.getElementById('admin-panel').style.display = 'block';
+          const ul = document.getElementById('propositions');
+          ul.innerHTML = '';
+          if (data.length === 0) {
+            ul.innerHTML = '<li>Aucune proposition en attente.</li>';
+          }
+          data.forEach(p => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <strong>${p.titre}</strong><br>
+              ${p.description}<br>
+              <a href="${p.lien}" target="_blank">${p.lien}</a><br>
+              <button onclick="action(${p.id}, 'valider')">Valider</button>
+              <button onclick="action(${p.id}, 'refuser')">Refuser</button>
+            `;
+            ul.appendChild(li);
+          });
+        })
+        .catch(() => {
+          document.getElementById('login-message').textContent = "Erreur de connexion.";
+        });
+    }
+
+    function action(id, action) {
+      fetch('/api/moderer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action, password: adminPass })
+      }).then(res => {
+        if (res.ok) {
+          login(); // refresh
+        } else {
+          document.getElementById('message').textContent = "Erreur lors de l'action.";
+        }
+      });
+    }
+    window.action = action; // pour accès global depuis le HTML généré
+  </script>
+</body>
+</html>

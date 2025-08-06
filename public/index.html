@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>CDI de L'ékip Teknik</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: auto; background: #f7f7f7; padding: 20px; }
+    input, textarea, button { margin-bottom: 8px; padding: 6px; width: 100%; }
+    button { width: auto; }
+    hr { margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <h1>Ressources validées</h1>
+  <ul id="ressources"></ul>
+  <hr />
+  <h2>Proposer une ressource</h2>
+  <form id="form">
+    <input name="titre" placeholder="Titre" required />
+    <textarea name="description" placeholder="Description" required></textarea>
+    <input name="lien" placeholder="Lien" required />
+    <button type="submit">Envoyer</button>
+  </form>
+  <div id="message"></div>
+  <hr />
+  <a href="/admin/">Panneau d'administration</a>
+  <script>
+    // Affiche les ressources validées
+    fetch('/api/ressources')
+      .then(res => res.json())
+      .then(data => {
+        const ul = document.getElementById('ressources');
+        ul.innerHTML = '';
+        data.forEach(r => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${r.lien}" target="_blank"><strong>${r.titre}</strong></a><br>${r.description}`;
+          ul.appendChild(li);
+        });
+      });
+
+    // Proposer une ressource
+    document.getElementById('form').onsubmit = async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        titre: form.titre.value,
+        description: form.description.value,
+        lien: form.lien.value
+      };
+      document.getElementById('message').textContent = "Envoi en cours...";
+      const res = await fetch('/api/proposer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        document.getElementById('message').textContent = "Merci ! Proposition envoyée.";
+        form.reset();
+      } else {
+        document.getElementById('message').textContent = "Erreur lors de l'envoi.";
+      }
+    };
+  </script>
+</body>
+</html>

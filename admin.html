@@ -20,6 +20,8 @@
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
+            position: relative; /* Pour positionner le message */
+            overflow: hidden; /* Pour que le message ne déborde pas pendant l'animation */
         }
         .pending-card h3 {
             font-weight: 600;
@@ -53,15 +55,40 @@
         .pending-card .actions .btn-reject:hover {
             background-color: #dc2626; /* red-600 */
         }
+
+        /* Styles pour le message sur la carte */
+        .card-message-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+            pointer-events: none; /* Permet de cliquer à travers le message */
+            z-index: 10;
+        }
+        .card-message-area.show {
+            opacity: 1;
+        }
+        .card-message-area.success {
+            background-color: rgba(16, 185, 129, 0.9); /* emerald-500 avec opacité */
+        }
+        .card-message-area.error {
+            background-color: rgba(239, 68, 68, 0.9); /* red-500 avec opacité */
+        }
     </style>
 </head>
 <body class="text-gray-800">
 
     <main class="container mx-auto p-4 md:p-8">
         <h1 class="text-3xl font-bold text-center mb-8 text-indigo-700">Panneau d'Administration CDI</h1>
-
-        <!-- Zone d'affichage des messages (succès/erreur) -->
-        <div id="message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
 
         <h2 class="text-2xl font-bold text-center mb-6">Propositions en attente de validation</h2>
         <div id="pending-suggestions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -94,7 +121,6 @@
 
         // Références aux éléments DOM spécifiques au panneau admin
         const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
-        const messageArea = document.getElementById('message-area');
 
         let unsubscribeAdminSnapshot = null; // Stocke la fonction de désabonnement de l'écouteur Firestore pour les suggestions
 
@@ -117,22 +143,26 @@
         };
 
         /**
-         * Affiche un message dans la zone de message.
+         * Affiche un message directement sur une carte et le fait disparaître.
+         * @param {HTMLElement} cardElement - L'élément de la carte sur laquelle afficher le message.
          * @param {string} message - Le message à afficher.
          * @param {string} type - Le type de message ('success' ou 'error').
          */
-        function showMessage(message, type) {
-            messageArea.textContent = message;
-            messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-            if (type === 'success') {
-                messageArea.classList.add('bg-green-100', 'text-green-800');
-            } else if (type === 'error') {
-                messageArea.classList.add('bg-red-100', 'text-red-800');
+        function showCardMessage(cardElement, message, type) {
+            const messageArea = cardElement.querySelector('.card-message-area');
+            if (messageArea) {
+                messageArea.textContent = message;
+                messageArea.className = `card-message-area show ${type}`; // Ajoute les classes pour afficher et styliser
+                
+                // Fait disparaître la carte après un délai pour l'animation
+                setTimeout(() => {
+                    messageArea.classList.remove('show');
+                    // Supprime la carte du DOM après la fin de l'animation de fondu
+                    setTimeout(() => {
+                        cardElement.remove();
+                    }, 500); // Correspond à la durée de transition CSS
+                }, 1000); // Affiche le message pendant 1 seconde avant de commencer à disparaître
             }
-            // Cache le message après 5 secondes
-            setTimeout(() => {
-                messageArea.classList.add('hidden');
-            }, 5000);
         }
 
         /**
@@ -157,8 +187,12 @@
                     const suggestion = docSnap.data();
                     const suggestionId = docSnap.id;
 
+                    // Crée la carte de suggestion
                     const card = document.createElement('div');
                     card.className = 'pending-card';
+                    card.setAttribute('data-id', suggestionId); // Ajoute l'ID pour un accès facile
+
+                    // Construit le HTML de la carte
                     card.innerHTML = `
                         <h3 class="text-indigo-800">${suggestion.title}</h3>
                         <p class="text-gray-600">${suggestion.description}</p>
@@ -171,12 +205,13 @@
                             <button class="btn-validate" data-id="${suggestionId}">Valider</button>
                             <button class="btn-reject" data-id="${suggestionId}">Refuser</button>
                         </div>
+                        <div class="card-message-area"></div> <!-- Zone pour le message de la carte -->
                     `;
                     pendingSuggestionsList.appendChild(card);
 
                     // Ajoute les écouteurs d'événements aux boutons de validation/rejet
-                    card.querySelector('.btn-validate').addEventListener('click', () => handleValidateSuggestion(suggestionId, suggestion));
-                    card.querySelector('.btn-reject').addEventListener('click', () => handleRejectSuggestion(suggestionId));
+                    card.querySelector('.btn-validate').addEventListener('click', () => handleValidateSuggestion(suggestionId, suggestion, card));
+                    card.querySelector('.btn-reject').addEventListener('click', () => handleRejectSuggestion(suggestionId, card));
                 });
             }, (error) => {
                 console.error("Error loading pending suggestions: ", error);
@@ -188,8 +223,9 @@
          * Gère la validation d'une suggestion : l'ajoute aux ressources et la supprime des suggestions.
          * @param {string} suggestionId - L'ID du document de suggestion.
          * @param {object} suggestionData - Les données de la suggestion à valider.
+         * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
          */
-        async function handleValidateSuggestion(suggestionId, suggestionData) {
+        async function handleValidateSuggestion(suggestionId, suggestionData, cardElement) {
             try {
                 // Crée un objet pour les données de la ressource validée
                 const resourceData = {
@@ -203,7 +239,8 @@
                 const specificFields = categorySpecificFields[suggestionData.category];
                 if (specificFields) {
                     specificFields.forEach(field => {
-                        if (suggestionData[field.id]) {
+                        // Utilise field.id directement car ce sont les clés dans suggestionData
+                        if (suggestionData[field.id]) { 
                             resourceData[field.id] = suggestionData[field.id];
                         }
                     });
@@ -211,24 +248,25 @@
                 
                 await addDoc(collection(db, 'resources'), resourceData);
                 await deleteDoc(doc(db, 'suggestions', suggestionId));
-                showMessage('Proposition validée et ajoutée aux ressources !', 'success');
+                showCardMessage(cardElement, 'Validée !', 'success');
             } catch (e) {
                 console.error("Error validating suggestion: ", e);
-                showMessage("Erreur lors de la validation de la proposition.", 'error');
+                showCardMessage(cardElement, 'Erreur !', 'error');
             }
         }
 
         /**
          * Gère le rejet d'une suggestion : la supprime des suggestions.
          * @param {string} suggestionId - L'ID du document de suggestion.
+         * @param {HTMLElement} cardElement - L'élément DOM de la carte associée à la suggestion.
          */
-        async function handleRejectSuggestion(suggestionId) {
+        async function handleRejectSuggestion(suggestionId, cardElement) {
             try {
                 await deleteDoc(doc(db, 'suggestions', suggestionId));
-                showMessage('Proposition refusée et supprimée.', 'success');
+                showCardMessage(cardElement, 'Refusée !', 'error');
             } catch (e) {
                 console.error("Error rejecting suggestion: ", e);
-                showMessage("Erreur lors du refus de la proposition.", 'error');
+                showCardMessage(cardElement, 'Erreur !', 'error');
             }
         }
 

@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   // Retire la proposition de la liste
   propositions = propositions.filter((p) => p.id !== id);
 
-  // Sauvegarde la nouvelle liste de propositions
+  // Sauvegarde la nouvelle liste de propositions (toujours PUT, même si refusé)
   await fetch(process.env.JSONBIN_PROPOSITIONS_URL, {
     method: "PUT",
     headers: {
@@ -36,6 +36,7 @@ export default async function handler(req, res) {
     const resData = await resRes.json();
     const ressources = resData.record || [];
     ressources.push(proposition);
+    // Sauvegarde la nouvelle liste de ressources (toujours PUT)
     await fetch(process.env.JSONBIN_RESSOURCES_URL, {
       method: "PUT",
       headers: {

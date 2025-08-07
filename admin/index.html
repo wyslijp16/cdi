@@ -480,21 +480,17 @@
         </div>
     </div>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, updatePassword, onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, onSnapshot, updateDoc, deleteDoc, setDoc, query, collection, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, updatePassword, onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, onSnapshot, updateDoc, deleteDoc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Variables globales pour l'application
-        let userRole = null;
-        let auth = null;
-        let db = null;
-        let categoryConfigData = {};
-        const MAX_RETRIES = 5;
-        const RETRY_DELAY_MS = 1000;
+    // Variables globales pour l'application
+    let userRole = null;
+    let auth = null;
+    let db = null;
+    let categoryConfigData = {};
 
-        // ATTENTION : REMPLACEZ CET OBJET firebaseConfig PAR CELUI DE VOTRE PROJET FIREBASE.
-        // VOUS POUVEZ LE TROUVER DANS LA CONSOLE FIREBASE -> Paramètres du projet -> Vos applications.
-        const firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
         authDomain: "cdi-lfi.firebaseapp.com",
         projectId: "cdi-lfi",
@@ -502,666 +498,667 @@
         messagingSenderId: "626855610699",
         appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
         measurementId: "G-EMXFSRL9W0"
-        };
+    };
 
-        // Initialisation de Firebase
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
+    // Initialisation de Firebase
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
 
-        // Références DOM
-        const loginContainer = document.getElementById('login-container');
-        const adminPanelContainer = document.getElementById('admin-panel-container');
-        const unauthorizedMessage = document.getElementById('unauthorized-message');
-        const loginForm = document.getElementById('login-form');
-        const loginMessageArea = document.getElementById('login-message-area');
-        const logoutBtn = document.getElementById('logout-btn');
-        const changePasswordBtn = document.getElementById('change-password-btn');
-        const changePasswordSection = document.getElementById('change-password-section');
-        const changePasswordForm = document.getElementById('change-password-form');
-        const passwordMessageArea = document.getElementById('password-message-area');
-        const hamburgerButton = document.getElementById('hamburger-button');
-        const sidebarMenu = document.getElementById('sidebar-menu');
-        const userRoleMenu = document.getElementById('user-role-menu');
-        const userEmailMenu = document.getElementById('user-email-menu');
-        const superuserMenuItems = document.getElementById('superuser-menu-items');
-        const generalMessageArea = document.getElementById('general-message-area');
+    // Références DOM
+    const loginContainer = document.getElementById('login-container');
+    const adminPanelContainer = document.getElementById('admin-panel-container');
+    const unauthorizedMessage = document.getElementById('unauthorized-message');
+    const loginForm = document.getElementById('login-form');
+    const loginMessageArea = document.getElementById('login-message-area');
+    const logoutBtn = document.getElementById('logout-btn');
+    const changePasswordBtn = document.getElementById('change-password-btn');
+    const changePasswordSection = document.getElementById('change-password-section');
+    const changePasswordForm = document.getElementById('change-password-form');
+    const passwordMessageArea = document.getElementById('password-message-area');
+    const hamburgerButton = document.getElementById('hamburger-button');
+    const sidebarMenu = document.getElementById('sidebar-menu');
+    const userRoleMenu = document.getElementById('user-role-menu');
+    const userEmailMenu = document.getElementById('user-email-menu');
+    const superuserMenuItems = document.getElementById('superuser-menu-items');
+    const generalMessageArea = document.getElementById('general-message-area');
 
-        // Références pour les sections
-        const sections = {
-            'welcome': document.getElementById('welcome-section'),
-            'pending': document.getElementById('pending-suggestions-section'),
-            'manage': document.getElementById('manage-resources-section'),
-            'config': document.getElementById('manage-config-section'),
-            'password': document.getElementById('change-password-section')
-        };
-        const menuButtons = {
-            'welcome': document.getElementById('menu-btn-show-welcome'),
-            'pending': document.getElementById('menu-btn-show-pending'),
-            'manage': document.getElementById('menu-btn-show-manage'),
-            'config': document.getElementById('menu-btn-show-config'),
-        };
+    // Références pour les sections
+    const sections = {
+        'welcome': document.getElementById('welcome-section'),
+        'pending': document.getElementById('pending-suggestions-section'),
+        'manage': document.getElementById('manage-resources-section'),
+        'config': document.getElementById('manage-config-section'),
+        'password': document.getElementById('change-password-section')
+    };
+    const menuButtons = {
+        'welcome': document.getElementById('menu-btn-show-welcome'),
+        'pending': document.getElementById('menu-btn-show-pending'),
+        'manage': document.getElementById('menu-btn-show-manage'),
+        'config': document.getElementById('menu-btn-show-config'),
+    };
 
-        // Modales
-        const resourceEditModal = document.getElementById('resource-edit-modal');
-        const resourceEditForm = document.getElementById('resource-edit-form');
-        const editResourceId = document.getElementById('edit-resource-id');
-        const editResourceTitle = document.getElementById('edit-resource-title');
-        const editResourceDescription = document.getElementById('edit-resource-description');
-        const editResourceLink = document.getElementById('edit-resource-link');
-        const editResourceCategory = document.getElementById('edit-resource-category');
-        const editResourceFilterFields = document.getElementById('edit-resource-filter-fields');
-        const deleteResourceButton = document.getElementById('delete-resource-button');
+    // Modales
+    const resourceEditModal = document.getElementById('resource-edit-modal');
+    const resourceEditForm = document.getElementById('resource-edit-form');
+    const editResourceId = document.getElementById('edit-resource-id');
+    const editResourceTitle = document.getElementById('edit-resource-title');
+    const editResourceDescription = document.getElementById('edit-resource-description');
+    const editResourceLink = document.getElementById('edit-resource-link');
+    const editResourceCategory = document.getElementById('edit-resource-category');
+    const editResourceFilterFields = document.getElementById('edit-resource-filter-fields');
+    const deleteResourceButton = document.getElementById('delete-resource-button');
 
-        const editCategoryModal = document.getElementById('edit-category-modal');
-        const editCategoryForm = document.getElementById('edit-category-form');
-        const editCategoryName = document.getElementById('edit-category-name');
-        const editCategoryKeyInput = document.getElementById('edit-category-key-input');
-        const editCategoryFilterPropertiesList = document.getElementById('edit-category-filter-properties-list');
-        const addEditFilterPropertyButton = document.getElementById('add-edit-filter-property-button');
-        const deleteCategoryButton = document.getElementById('delete-category-button');
+    const editCategoryModal = document.getElementById('edit-category-modal');
+    const editCategoryForm = document.getElementById('edit-category-form');
+    const editCategoryName = document.getElementById('edit-category-name');
+    const editCategoryKeyInput = document.getElementById('edit-category-key-input');
+    const editCategoryFilterPropertiesList = document.getElementById('edit-category-filter-properties-list');
+    const addEditFilterPropertyButton = document.getElementById('add-edit-filter-property-button');
+    const deleteCategoryButton = document.getElementById('delete-category-button');
 
-        const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
-        const resourcesList = document.getElementById('resources-list');
-        const categoriesConfigList = document.getElementById('categories-config-list');
-        const addCategoryForm = document.getElementById('add-category-form');
-        const newCategoryNameInput = document.getElementById('new-category-name-input');
-        const newCategoryFilterPropertiesContainer = document.getElementById('new-category-filter-properties-container');
-        const addNewFilterPropertyButton = document.getElementById('add-new-filter-property-button');
+    const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
+    const resourcesList = document.getElementById('resources-list');
+    const categoriesConfigList = document.getElementById('categories-config-list');
+    const addCategoryForm = document.getElementById('add-category-form');
+    const newCategoryNameInput = document.getElementById('new-category-name-input');
+    const newCategoryFilterPropertiesContainer = document.getElementById('new-category-filter-properties-container');
+    const addNewFilterPropertyButton = document.getElementById('add-new-filter-property-button');
 
-        // Fonction d'affichage des messages généraux
-        function showGeneralMessage(message, type) {
-            generalMessageArea.textContent = message;
-            generalMessageArea.className = `text-center p-3 rounded-lg mb-4 text-white font-bold`;
-            if (type === 'success') {
-                generalMessageArea.classList.add('bg-green-500');
-            } else if (type === 'error') {
-                generalMessageArea.classList.add('bg-red-500');
-            }
-            generalMessageArea.classList.remove('hidden');
-            setTimeout(() => {
-                generalMessageArea.classList.add('hidden');
-            }, 5000);
+    // Fonction d'affichage des messages généraux
+    function showGeneralMessage(message, type) {
+        generalMessageArea.textContent = message;
+        generalMessageArea.className = `text-center p-3 rounded-lg mb-4 text-white font-bold`;
+        if (type === 'success') {
+            generalMessageArea.classList.add('bg-green-500');
+        } else if (type === 'error') {
+            generalMessageArea.classList.add('bg-red-500');
+        }
+        generalMessageArea.classList.remove('hidden');
+        setTimeout(() => {
+            generalMessageArea.classList.add('hidden');
+        }, 5000);
+    }
+
+    // Fonction pour afficher une section et cacher les autres
+    function showSection(sectionName) {
+        Object.values(sections).forEach(section => section.classList.add('hidden'));
+        if (sections[sectionName]) {
+            sections[sectionName].classList.remove('hidden');
+        }
+        Object.values(menuButtons).forEach(btn => btn.classList.remove('active-section-button'));
+        if (menuButtons[sectionName]) {
+            menuButtons[sectionName].classList.add('active-section-button');
         }
 
-        // Fonction pour afficher une section et cacher les autres
-        function showSection(sectionName) {
-            Object.values(sections).forEach(section => section.classList.add('hidden'));
-            if (sections[sectionName]) {
-                sections[sectionName].classList.remove('hidden');
-            }
-            Object.values(menuButtons).forEach(btn => btn.classList.remove('active-section-button'));
-            if (menuButtons[sectionName]) {
-                menuButtons[sectionName].classList.add('active-section-button');
-            }
-
-            if (sectionName === 'pending') {
-                loadPendingSuggestions();
-            } else if (sectionName === 'manage') {
-                loadExistingResources();
-            } else if (sectionName === 'config') {
-                renderCategoryConfig();
-            }
+        if (sectionName === 'pending') {
+            loadPendingSuggestions();
+        } else if (sectionName === 'manage') {
+            loadExistingResources();
+        } else if (sectionName === 'config') {
+            renderCategoryConfig();
         }
+    }
 
-        // Fonction pour afficher le contenu du panneau d'administration après l'authentification
-        function showAdminPanel(user) {
-            loginContainer.classList.add('hidden');
-            unauthorizedMessage.classList.add('hidden');
-            adminPanelContainer.classList.remove('hidden');
+    // Fonction pour afficher le contenu du panneau d'administration après l'authentification
+    function showAdminPanel(user) {
+        loginContainer.classList.add('hidden');
+        unauthorizedMessage.classList.add('hidden');
+        adminPanelContainer.classList.remove('hidden');
 
-            // Mise à jour de l'UI avec les infos de l'utilisateur
-            userEmailMenu.textContent = user.email;
+        // Mise à jour de l'UI avec les infos de l'utilisateur
+        userEmailMenu.textContent = user.email;
 
-            // Masquer les éléments superuser par défaut
-            superuserMenuItems.classList.add('hidden');
+        // Masquer les éléments superuser par défaut
+        superuserMenuItems.classList.add('hidden');
 
-            // Récupération du rôle de l'utilisateur
-            const userDocRef = doc(db, 'users', user.uid);
-            onSnapshot(userDocRef, (docSnap) => {
-                if (docSnap.exists() && docSnap.data().role === 'superuser') {
-                    userRole = 'superuser';
-                    userRoleMenu.textContent = 'Superuser';
-                    superuserMenuItems.classList.remove('hidden');
-                } else {
-                    userRole = 'user';
-                    userRoleMenu.textContent = 'Admin';
-                }
-                // Charger la section de bienvenue par défaut une fois le rôle connu
-                showSection('welcome');
-            }, (error) => {
-                console.error("Error getting user role: ", error);
+        // Récupération du rôle de l'utilisateur
+        const userDocRef = doc(db, 'users', user.uid);
+        onSnapshot(userDocRef, (docSnap) => {
+            if (docSnap.exists() && docSnap.data().role === 'superuser') {
+                userRole = 'superuser';
+                userRoleMenu.textContent = 'Superuser';
+                superuserMenuItems.classList.remove('hidden');
+            } else {
                 userRole = 'user';
                 userRoleMenu.textContent = 'Admin';
-                showSection('welcome');
-            });
-        }
-
-        // Fonction pour afficher la page de connexion
-        function showLoginPage() {
-            loginContainer.classList.remove('hidden');
-            adminPanelContainer.classList.add('hidden');
-            unauthorizedMessage.classList.add('hidden');
-            userRole = null;
-        }
-
-        // Fonction pour afficher un message d'erreur d'accès
-        function showUnauthorizedPage() {
-            loginContainer.classList.add('hidden');
-            adminPanelContainer.classList.add('hidden');
-            unauthorizedMessage.classList.remove('hidden');
-            userRole = null;
-        }
-
-        // Gérer l'authentification au chargement
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userDocRef = doc(db, 'users', user.uid);
-                try {
-                    const userDocSnap = await getDoc(userDocRef);
-                    if (userDocSnap.exists() && (userDocSnap.data().role === 'superuser' || userDocSnap.data().role === 'admin')) {
-                        showAdminPanel(user);
-                    } else {
-                        showUnauthorizedPage();
-                    }
-                } catch (error) {
-                    console.error("Error checking user role: ", error);
-                    showUnauthorizedPage();
-                }
-            } else {
-                showLoginPage();
             }
+            // Charger la section de bienvenue par défaut une fois le rôle connu
+            showSection('welcome');
+        }, (error) => {
+            console.error("Error getting user role: ", error);
+            userRole = 'user';
+            userRoleMenu.textContent = 'Admin';
+            showSection('welcome');
         });
+    }
 
-        // Gérer la connexion
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = loginForm['login-email'].value;
-            const password = loginForm['login-password'].value;
+    // Fonction pour afficher la page de connexion
+    function showLoginPage() {
+        loginContainer.classList.remove('hidden');
+        adminPanelContainer.classList.add('hidden');
+        unauthorizedMessage.classList.add('hidden');
+        userRole = null;
+    }
+
+    // Fonction pour afficher un message d'erreur d'accès
+    function showUnauthorizedPage() {
+        loginContainer.classList.add('hidden');
+        adminPanelContainer.classList.add('hidden');
+        unauthorizedMessage.classList.remove('hidden');
+        userRole = null;
+    }
+
+    // Gérer l'authentification au chargement
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDocRef = doc(db, 'users', user.uid);
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                const userDocRef = doc(db, 'users', user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists() && (userDocSnap.data().role === 'superuser' || userDocSnap.data().role === 'admin')) {
-                    showGeneralMessage('Connexion réussie!', 'success');
+                    showAdminPanel(user);
                 } else {
-                    await signOut(auth); // Déconnecte l'utilisateur non autorisé
                     showUnauthorizedPage();
                 }
             } catch (error) {
-                console.error("Login error:", error);
-                loginMessageArea.textContent = `Erreur de connexion : ${error.message}`;
-                loginMessageArea.classList.remove('hidden');
-                loginMessageArea.classList.remove('bg-green-500');
-                loginMessageArea.classList.add('bg-red-500', 'text-white');
+                console.error("Error checking user role: ", error);
+                showUnauthorizedPage();
             }
-        });
+        } else {
+            showLoginPage();
+        }
+    });
 
-        // Gérer la déconnexion
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                showGeneralMessage('Déconnexion réussie!', 'success');
-            } catch (error) {
-                showGeneralMessage('Erreur de déconnexion.', 'error');
-                console.error("Logout error: ", error);
-            }
-        });
-
-        // Gérer le changement de mot de passe
-        changePasswordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const currentPassword = changePasswordForm['current-password-input'].value;
-            const newPassword = changePasswordForm['new-password-input'].value;
-            const confirmNewPassword = changePasswordForm['confirm-new-password-input'].value;
-
-            if (newPassword !== confirmNewPassword) {
-                passwordMessageArea.textContent = "Les nouveaux mots de passe ne correspondent pas.";
-                passwordMessageArea.classList.add('bg-red-500', 'text-white');
-                passwordMessageArea.classList.remove('hidden');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                passwordMessageArea.textContent = "Le nouveau mot de passe doit contenir au moins 6 caractères.";
-                passwordMessageArea.classList.add('bg-red-500', 'text-white');
-                passwordMessageArea.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                const user = auth.currentUser;
-                const credential = EmailAuthProvider.credential(user.email, currentPassword);
-                await reauthenticateWithCredential(user, credential);
-                await updatePassword(user, newPassword);
-                showGeneralMessage('Mot de passe changé avec succès!', 'success');
-                showSection('welcome'); // Retour à la page d'accueil
-                passwordMessageArea.classList.add('hidden');
-                changePasswordForm.reset();
-            } catch (error) {
-                console.error("Erreur de changement de mot de passe: ", error);
-                passwordMessageArea.textContent = `Erreur de changement de mot de passe: ${error.message}`;
-                passwordMessageArea.classList.add('bg-red-500', 'text-white');
-                passwordMessageArea.classList.remove('hidden');
-            }
-        });
-
-        // Toggle du menu latéral
-        hamburgerButton.addEventListener('click', () => {
-            sidebarMenu.classList.toggle('open');
-        });
-
-        // Cacher le menu latéral au clic sur un bouton
-        document.querySelectorAll('.menu-button').forEach(button => {
-            button.addEventListener('click', () => {
-                sidebarMenu.classList.remove('open');
-            });
-        });
-
-        // --- Fonctions de gestion des ressources et propositions ---
-
-        // Créer un élément de carte pour une ressource/proposition
-        function createCardElement(data, isPending) {
-            const card = document.createElement('div');
-            card.className = `${isPending ? 'pending-card' : 'resource-card'} relative group`;
-            card.innerHTML = `
-                <div class="card-message-area"></div>
-                <h3 class="font-bold text-lg text-indigo-700">${data.title}</h3>
-                <p class="text-sm text-gray-600">${data.description}</p>
-                ${data.link ? `<p class="text-xs text-indigo-500 truncate"><a href="${data.link}" target="_blank">${data.link}</a></p>` : ''}
-                <p class="text-xs text-gray-400">Catégorie: ${data.category}</p>
-                <div class="actions mt-4">
-                    ${isPending ? `<button class="btn-validate bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Valider</button>` : ''}
-                    ${isPending ? `<button class="btn-reject bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Rejeter</button>` : ''}
-                    ${!isPending ? `<button class="btn-edit bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Éditer</button>` : ''}
-                    ${!isPending ? `<button class="btn-delete bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Supprimer</button>` : ''}
-                </div>
-            `;
-            if (isPending) {
-                card.querySelector('.btn-validate').addEventListener('click', () => handleValidation(card, data.id, true));
-                card.querySelector('.btn-reject').addEventListener('click', () => handleValidation(card, data.id, false));
+    // Gérer la connexion
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = loginForm['login-email'].value;
+        const password = loginForm['login-password'].value;
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists() && (userDocSnap.data().role === 'superuser' || userDocSnap.data().role === 'admin')) {
+                showGeneralMessage('Connexion réussie!', 'success');
             } else {
-                card.querySelector('.btn-edit').addEventListener('click', () => handleEditResource(data));
-                card.querySelector('.btn-delete').addEventListener('click', () => deleteResource(data.id, card));
+                await signOut(auth); // Déconnecte l'utilisateur non autorisé
+                showUnauthorizedPage();
             }
-            return card;
+        } catch (error) {
+            console.error("Login error:", error);
+            loginMessageArea.textContent = `Erreur de connexion : ${error.message}`;
+            loginMessageArea.classList.remove('hidden');
+            loginMessageArea.classList.remove('bg-green-500');
+            loginMessageArea.classList.add('bg-red-500', 'text-white');
+        }
+    });
+
+    // Gérer la déconnexion
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            showGeneralMessage('Déconnexion réussie!', 'success');
+        } catch (error) {
+            showGeneralMessage('Erreur de déconnexion.', 'error');
+            console.error("Logout error: ", error);
+        }
+    });
+
+    // Gérer le changement de mot de passe
+    changePasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const currentPassword = changePasswordForm['current-password-input'].value;
+        const newPassword = changePasswordForm['new-password-input'].value;
+        const confirmNewPassword = changePasswordForm['confirm-new-password-input'].value;
+
+        if (newPassword !== confirmNewPassword) {
+            passwordMessageArea.textContent = "Les nouveaux mots de passe ne correspondent pas.";
+            passwordMessageArea.classList.add('bg-red-500', 'text-white');
+            passwordMessageArea.classList.remove('hidden');
+            return;
         }
 
-        // Fonction pour gérer la validation/rejet d'une proposition
-        async function handleValidation(cardElement, docId, isAccepted) {
-            const messageArea = cardElement.querySelector('.card-message-area');
-            cardElement.classList.add('fade-out');
+        if (newPassword.length < 6) {
+            passwordMessageArea.textContent = "Le nouveau mot de passe doit contenir au moins 6 caractères.";
+            passwordMessageArea.classList.add('bg-red-500', 'text-white');
+            passwordMessageArea.classList.remove('hidden');
+            return;
+        }
 
-            try {
-                // Supprimer la proposition de la collection "pending"
-                const docRef = doc(db, 'pending', docId);
-                await deleteDoc(docRef);
+        try {
+            const user = auth.currentUser;
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+            showGeneralMessage('Mot de passe changé avec succès!', 'success');
+            showSection('welcome'); // Retour à la page d'accueil
+            passwordMessageArea.classList.add('hidden');
+            changePasswordForm.reset();
+        } catch (error) {
+            console.error("Erreur de changement de mot de passe: ", error);
+            passwordMessageArea.textContent = `Erreur de changement de mot de passe: ${error.message}`;
+            passwordMessageArea.classList.add('bg-red-500', 'text-white');
+            passwordMessageArea.classList.remove('hidden');
+        }
+    });
 
-                if (isAccepted) {
-                    // Si acceptée, ajouter à la collection "resources"
-                    const resourceRef = collection(db, 'resources');
-                    const pendingDocSnap = await getDoc(doc(db, 'pending', docId));
-                    if (pendingDocSnap.exists()) {
-                        await addDoc(resourceRef, pendingDocSnap.data());
-                    }
-                    messageArea.textContent = 'Validé!';
-                    messageArea.classList.add('success', 'show');
-                } else {
-                    messageArea.textContent = 'Rejeté!';
-                    messageArea.classList.add('error', 'show');
-                }
-                
-                // Attendre l'animation de fade-out puis supprimer l'élément
-                setTimeout(() => {
-                    if (cardElement.parentNode) {
-                        cardElement.parentNode.removeChild(cardElement);
-                    }
-                }, 500);
+    // Toggle du menu latéral
+    hamburgerButton.addEventListener('click', () => {
+        sidebarMenu.classList.toggle('open');
+    });
 
-            } catch (error) {
-                console.error("Erreur lors de la validation/rejet: ", error);
-                messageArea.textContent = 'Erreur!';
+    // Cacher le menu latéral au clic sur un bouton
+    document.querySelectorAll('.menu-button').forEach(button => {
+        button.addEventListener('click', () => {
+            sidebarMenu.classList.remove('open');
+        });
+    });
+
+    // --- Fonctions de gestion des ressources et suggestions ---
+
+    // Créer un élément de carte pour une ressource/suggestion
+    function createCardElement(data, isPending) {
+        const card = document.createElement('div');
+        card.className = `${isPending ? 'pending-card' : 'resource-card'} relative group`;
+        card.innerHTML = `
+            <div class="card-message-area"></div>
+            <h3 class="font-bold text-lg text-indigo-700">${data.title}</h3>
+            <p class="text-sm text-gray-600">${data.description}</p>
+            ${data.link ? `<p class="text-xs text-indigo-500 truncate"><a href="${data.link}" target="_blank">${data.link}</a></p>` : ''}
+            <p class="text-xs text-gray-400">Catégorie: ${data.category}</p>
+            <div class="actions mt-4">
+                ${isPending ? `<button class="btn-validate bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Valider</button>` : ''}
+                ${isPending ? `<button class="btn-reject bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Rejeter</button>` : ''}
+                ${!isPending ? `<button class="btn-edit bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Éditer</button>` : ''}
+                ${!isPending ? `<button class="btn-delete bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Supprimer</button>` : ''}
+            </div>
+        `;
+        if (isPending) {
+            card.querySelector('.btn-validate').addEventListener('click', () => handleValidation(card, data.id, true));
+            card.querySelector('.btn-reject').addEventListener('click', () => handleValidation(card, data.id, false));
+        } else {
+            card.querySelector('.btn-edit').addEventListener('click', () => handleEditResource(data));
+            card.querySelector('.btn-delete').addEventListener('click', () => deleteResource(data.id, card));
+        }
+        return card;
+    }
+
+    // Fonction pour gérer la validation/rejet d'une suggestion
+    async function handleValidation(cardElement, docId, isAccepted) {
+        const messageArea = cardElement.querySelector('.card-message-area');
+        cardElement.classList.add('fade-out');
+
+        try {
+            // Récupérer les données AVANT suppression
+            const suggestionRef = doc(db, 'suggestions', docId);
+            const suggestionSnap = await getDoc(suggestionRef);
+            const suggestionData = suggestionSnap.exists() ? suggestionSnap.data() : null;
+
+            // Supprimer la suggestion de la collection "suggestions"
+            await deleteDoc(suggestionRef);
+
+            if (isAccepted && suggestionData) {
+                // Si acceptée, ajouter à la collection "resources"
+                const resourceRef = collection(db, 'resources');
+                await addDoc(resourceRef, suggestionData);
+                messageArea.textContent = 'Validé!';
+                messageArea.classList.add('success', 'show');
+            } else {
+                messageArea.textContent = 'Rejeté!';
                 messageArea.classList.add('error', 'show');
-                cardElement.classList.remove('fade-out');
-                setTimeout(() => messageArea.classList.remove('show'), 3000);
             }
-        }
-
-        // Fonction pour charger et afficher les propositions en attente
-        function loadPendingSuggestions() {
-            pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>`;
-            const pendingRef = collection(db, 'pending');
-            onSnapshot(pendingRef, (querySnapshot) => {
-                pendingSuggestionsList.innerHTML = '';
-                const pendingCount = querySnapshot.docs.length;
-                if (pendingCount === 0) {
-                    pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune proposition en attente pour le moment.</p>`;
-                    return;
-                }
-                querySnapshot.forEach((doc) => {
-                    const data = { id: doc.id, ...doc.data() };
-                    const card = createCardElement(data, true);
-                    pendingSuggestionsList.appendChild(card);
-                });
-            }, (error) => {
-                console.error("Error loading pending suggestions: ", error);
-                pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des propositions.</p>`;
-            });
-        }
-        
-        // Fonction pour charger et afficher les ressources existantes
-        function loadExistingResources() {
-            resourcesList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>`;
-            const resourcesRef = collection(db, 'resources');
-            onSnapshot(resourcesRef, (querySnapshot) => {
-                resourcesList.innerHTML = '';
-                const resourceCount = querySnapshot.docs.length;
-                if (resourceCount === 0) {
-                    resourcesList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune ressource existante.</p>`;
-                    return;
-                }
-                querySnapshot.forEach((doc) => {
-                    const data = { id: doc.id, ...doc.data() };
-                    const card = createCardElement(data, false);
-                    resourcesList.appendChild(card);
-                });
-            }, (error) => {
-                console.error("Error loading existing resources: ", error);
-                resourcesList.innerHTML = `<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des ressources.</p>`;
-            });
-        }
-
-        // Fonction pour générer dynamiquement les champs de filtre d'une ressource
-        function renderResourceFilterFields(resourceData, targetElement) {
-            targetElement.innerHTML = ''; // Nettoyer les anciens champs
-            if (resourceData.category && categoryConfigData[resourceData.category]) {
-                const filters = categoryConfigData[resourceData.category].filters;
-                if (filters) {
-                    for (const filterId in filters) {
-                        const filterLabel = filters[filterId];
-                        const fieldValue = resourceData.filters ? (resourceData.filters[filterId] || '') : '';
-                        const filterGroup = document.createElement('div');
-                        filterGroup.className = 'modal-form-group';
-                        filterGroup.innerHTML = `
-                            <label for="edit-resource-${filterId}">${filterLabel}</label>
-                            <input type="text" id="edit-resource-${filterId}" data-filter-id="${filterId}" value="${fieldValue}">
-                        `;
-                        targetElement.appendChild(filterGroup);
-                    }
-                }
-            }
-        }
-        
-        // Gérer le clic sur le bouton "Éditer" d'une ressource
-        function handleEditResource(resourceData) {
-            editResourceId.value = resourceData.id;
-            editResourceTitle.value = resourceData.title;
-            editResourceDescription.value = resourceData.description;
-            editResourceLink.value = resourceData.link;
             
-            // Remplir le select des catégories
-            editResourceCategory.innerHTML = '';
-            for (const key in categoryConfigData) {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = categoryConfigData[key].label;
-                editResourceCategory.appendChild(option);
-            }
-            editResourceCategory.value = resourceData.category;
-
-            // Rendre les champs de filtre
-            renderResourceFilterFields(resourceData, editResourceFilterFields);
-
-            // Gérer le changement de catégorie pour mettre à jour les filtres
-            editResourceCategory.onchange = () => {
-                const newCategory = editResourceCategory.value;
-                const newResourceData = { ...resourceData, category: newCategory };
-                renderResourceFilterFields(newResourceData, editResourceFilterFields);
-            };
-
-            resourceEditModal.classList.add('show');
-        }
-
-        // Gérer la soumission du formulaire d'édition de ressource
-        resourceEditForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const resourceId = editResourceId.value;
-            const updatedResource = {
-                title: editResourceTitle.value,
-                description: editResourceDescription.value,
-                link: editResourceLink.value,
-                category: editResourceCategory.value,
-                filters: {}
-            };
-
-            // Collecter les valeurs des filtres dynamiques
-            editResourceFilterFields.querySelectorAll('input').forEach(input => {
-                const filterId = input.dataset.filterId;
-                if (filterId) {
-                    updatedResource.filters[filterId] = input.value;
+            // Attendre l'animation de fade-out puis supprimer l'élément
+            setTimeout(() => {
+                if (cardElement.parentNode) {
+                    cardElement.parentNode.removeChild(cardElement);
                 }
-            });
+            }, 500);
 
+        } catch (error) {
+            console.error("Erreur lors de la validation/rejet: ", error);
+            messageArea.textContent = 'Erreur!';
+            messageArea.classList.add('error', 'show');
+            cardElement.classList.remove('fade-out');
+            setTimeout(() => messageArea.classList.remove('show'), 3000);
+        }
+    }
+
+    // Fonction pour charger et afficher les suggestions en attente
+    function loadPendingSuggestions() {
+        pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>`;
+        const suggestionsRef = collection(db, 'suggestions');
+        onSnapshot(suggestionsRef, (querySnapshot) => {
+            pendingSuggestionsList.innerHTML = '';
+            const pendingCount = querySnapshot.docs.length;
+            if (pendingCount === 0) {
+                pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune proposition en attente pour le moment.</p>`;
+                return;
+            }
+            querySnapshot.forEach((doc) => {
+                const data = { id: doc.id, ...doc.data() };
+                const card = createCardElement(data, true);
+                pendingSuggestionsList.appendChild(card);
+            });
+        }, (error) => {
+            console.error("Error loading pending suggestions: ", error);
+            pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des propositions.</p>`;
+        });
+    }
+
+    // Fonction pour charger et afficher les ressources existantes
+    function loadExistingResources() {
+        resourcesList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>`;
+        const resourcesRef = collection(db, 'resources');
+        onSnapshot(resourcesRef, (querySnapshot) => {
+            resourcesList.innerHTML = '';
+            const resourceCount = querySnapshot.docs.length;
+            if (resourceCount === 0) {
+                resourcesList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune ressource existante.</p>`;
+                return;
+            }
+            querySnapshot.forEach((doc) => {
+                const data = { id: doc.id, ...doc.data() };
+                const card = createCardElement(data, false);
+                resourcesList.appendChild(card);
+            });
+        }, (error) => {
+            console.error("Error loading existing resources: ", error);
+            resourcesList.innerHTML = `<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des ressources.</p>`;
+        });
+    }
+
+    // Fonction pour générer dynamiquement les champs de filtre d'une ressource
+    function renderResourceFilterFields(resourceData, targetElement) {
+        targetElement.innerHTML = ''; // Nettoyer les anciens champs
+        if (resourceData.category && categoryConfigData[resourceData.category]) {
+            const filters = categoryConfigData[resourceData.category].filters;
+            if (filters) {
+                for (const filterId in filters) {
+                    const filterLabel = filters[filterId];
+                    const fieldValue = resourceData.filters ? (resourceData.filters[filterId] || '') : '';
+                    const filterGroup = document.createElement('div');
+                    filterGroup.className = 'modal-form-group';
+                    filterGroup.innerHTML = `
+                        <label for="edit-resource-${filterId}">${filterLabel}</label>
+                        <input type="text" id="edit-resource-${filterId}" data-filter-id="${filterId}" value="${fieldValue}">
+                    `;
+                    targetElement.appendChild(filterGroup);
+                }
+            }
+        }
+    }
+
+    // Gérer le clic sur le bouton "Éditer" d'une ressource
+    function handleEditResource(resourceData) {
+        editResourceId.value = resourceData.id;
+        editResourceTitle.value = resourceData.title;
+        editResourceDescription.value = resourceData.description;
+        editResourceLink.value = resourceData.link;
+
+        // Remplir le select des catégories
+        editResourceCategory.innerHTML = '';
+        for (const key in categoryConfigData) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = categoryConfigData[key].label;
+            editResourceCategory.appendChild(option);
+        }
+        editResourceCategory.value = resourceData.category;
+
+        // Rendre les champs de filtre
+        renderResourceFilterFields(resourceData, editResourceFilterFields);
+
+        // Gérer le changement de catégorie pour mettre à jour les filtres
+        editResourceCategory.onchange = () => {
+            const newCategory = editResourceCategory.value;
+            const newResourceData = { ...resourceData, category: newCategory };
+            renderResourceFilterFields(newResourceData, editResourceFilterFields);
+        };
+
+        resourceEditModal.classList.add('show');
+    }
+
+    // Gérer la soumission du formulaire d'édition de ressource
+    resourceEditForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const resourceId = editResourceId.value;
+        const updatedResource = {
+            title: editResourceTitle.value,
+            description: editResourceDescription.value,
+            link: editResourceLink.value,
+            category: editResourceCategory.value,
+            filters: {}
+        };
+
+        // Collecter les valeurs des filtres dynamiques
+        editResourceFilterFields.querySelectorAll('input').forEach(input => {
+            const filterId = input.dataset.filterId;
+            if (filterId) {
+                updatedResource.filters[filterId] = input.value;
+            }
+        });
+
+        try {
+            const resourceDocRef = doc(db, 'resources', resourceId);
+            await updateDoc(resourceDocRef, updatedResource);
+            showGeneralMessage('Ressource mise à jour avec succès.', 'success');
+            resourceEditModal.classList.remove('show');
+        } catch (error) {
+            console.error("Error updating resource: ", error);
+            showGeneralMessage('Erreur lors de la mise à jour de la ressource.', 'error');
+        }
+    });
+
+    // Gérer la suppression d'une ressource
+    deleteResourceButton.addEventListener('click', async () => {
+        const resourceId = editResourceId.value;
+        if (confirm("Êtes-vous sûr de vouloir supprimer cette ressource ?")) {
             try {
                 const resourceDocRef = doc(db, 'resources', resourceId);
-                await updateDoc(resourceDocRef, updatedResource);
-                showGeneralMessage('Ressource mise à jour avec succès.', 'success');
+                await deleteDoc(resourceDocRef);
+                showGeneralMessage('Ressource supprimée avec succès.', 'success');
                 resourceEditModal.classList.remove('show');
             } catch (error) {
-                console.error("Error updating resource: ", error);
-                showGeneralMessage('Erreur lors de la mise à jour de la ressource.', 'error');
+                console.error("Error deleting resource: ", error);
+                showGeneralMessage('Erreur lors de la suppression de la ressource.', 'error');
+            }
+        }
+    });
+
+    // Fermer la modale d'édition de ressource
+    document.getElementById('close-resource-modal-button').addEventListener('click', () => resourceEditModal.classList.remove('show'));
+    document.getElementById('cancel-resource-edit-button').addEventListener('click', () => resourceEditModal.classList.remove('show'));
+
+    // --- Fonctions de gestion des catégories et filtres ---
+
+    // Fonction pour créer un élément de carte pour une catégorie
+    function createCategoryConfigCard(key, data) {
+        const card = document.createElement('div');
+        card.className = 'category-config-card';
+        card.innerHTML = `
+            <h3 class="font-bold text-lg text-indigo-700">${data.label}</h3>
+            <p class="text-sm text-gray-600">ID: ${key}</p>
+            <div class="actions mt-4">
+                <button class="btn-edit-category bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Gérer les filtres</button>
+            </div>
+        `;
+        card.querySelector('.btn-edit-category').addEventListener('click', () => handleEditCategory(key, data));
+        return card;
+    }
+
+    // Fonction pour charger et afficher la configuration des catégories
+    function renderCategoryConfig() {
+        categoriesConfigList.innerHTML = `<p class="text-gray-500">Chargement de la configuration...</p>`;
+        if (Object.keys(categoryConfigData).length === 0) {
+            categoriesConfigList.innerHTML = `<p class="text-gray-500">Aucune catégorie configurée.</p>`;
+            return;
+        }
+        categoriesConfigList.innerHTML = '';
+        for (const key in categoryConfigData) {
+            const card = createCategoryConfigCard(key, categoryConfigData[key]);
+            categoriesConfigList.appendChild(card);
+        }
+    }
+
+    // Fonction pour ajouter un champ de propriété de filtre
+    function addFilterPropertyField(container) {
+        const newItem = document.createElement('div');
+        newItem.className = 'filter-property-item';
+        newItem.innerHTML = `
+            <input type="text" placeholder="ID du filtre (ex: 'auteur')" class="filter-id-input w-1/2" required>
+            <input type="text" placeholder="Label du filtre (ex: 'Auteur')" class="filter-label-input w-1/2" required>
+            <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
+                &times;
+            </button>
+        `;
+        newItem.querySelector('button').addEventListener('click', () => newItem.remove());
+        container.appendChild(newItem);
+    }
+
+    // Gérer le clic sur le bouton "Ajouter une propriété de filtre" pour la création de catégorie
+    addNewFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(newCategoryFilterPropertiesContainer));
+
+    // Gérer la soumission du formulaire d'ajout de catégorie
+    addCategoryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const categoryName = newCategoryNameInput.value.trim();
+        const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
+        const filters = {};
+        const filterItems = newCategoryFilterPropertiesContainer.querySelectorAll('.filter-property-item');
+        filterItems.forEach(item => {
+            const filterId = item.querySelector('.filter-id-input').value;
+            const filterLabel = item.querySelector('.filter-label-input').value;
+            if (filterId && filterLabel) {
+                filters[filterId] = filterLabel;
             }
         });
 
-        // Gérer la suppression d'une ressource
-        deleteResourceButton.addEventListener('click', async () => {
-            const resourceId = editResourceId.value;
-            if (confirm("Êtes-vous sûr de vouloir supprimer cette ressource ?")) {
-                try {
-                    const resourceDocRef = doc(db, 'resources', resourceId);
-                    await deleteDoc(resourceDocRef);
-                    showGeneralMessage('Ressource supprimée avec succès.', 'success');
-                    resourceEditModal.classList.remove('show');
-                } catch (error) {
-                    console.error("Error deleting resource: ", error);
-                    showGeneralMessage('Erreur lors de la suppression de la ressource.', 'error');
-                }
-            }
-        });
-
-        // Fermer la modale d'édition de ressource
-        document.getElementById('close-resource-modal-button').addEventListener('click', () => resourceEditModal.classList.remove('show'));
-        document.getElementById('cancel-resource-edit-button').addEventListener('click', () => resourceEditModal.classList.remove('show'));
-
-        // --- Fonctions de gestion des catégories et filtres ---
-
-        // Fonction pour créer un élément de carte pour une catégorie
-        function createCategoryConfigCard(key, data) {
-            const card = document.createElement('div');
-            card.className = 'category-config-card';
-            card.innerHTML = `
-                <h3 class="font-bold text-lg text-indigo-700">${data.label}</h3>
-                <p class="text-sm text-gray-600">ID: ${key}</p>
-                <div class="actions mt-4">
-                    <button class="btn-edit-category bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Gérer les filtres</button>
-                </div>
-            `;
-            card.querySelector('.btn-edit-category').addEventListener('click', () => handleEditCategory(key, data));
-            return card;
+        if (!categoryId || Object.keys(filters).length === 0) {
+            showGeneralMessage("Le nom de la catégorie et au moins un filtre sont requis.", 'error');
+            return;
         }
 
-        // Fonction pour charger et afficher la configuration des catégories
-        function renderCategoryConfig() {
-            categoriesConfigList.innerHTML = `<p class="text-gray-500">Chargement de la configuration...</p>`;
-            if (Object.keys(categoryConfigData).length === 0) {
-                categoriesConfigList.innerHTML = `<p class="text-gray-500">Aucune catégorie configurée.</p>`;
-                return;
+        const updatedConfig = {
+            ...categoryConfigData,
+            [categoryId]: {
+                label: categoryName,
+                filters: filters
             }
-            categoriesConfigList.innerHTML = '';
-            for (const key in categoryConfigData) {
-                const card = createCategoryConfigCard(key, categoryConfigData[key]);
-                categoriesConfigList.appendChild(card);
-            }
-        }
+        };
         
-        // Fonction pour ajouter un champ de propriété de filtre
-        function addFilterPropertyField(container) {
-            const newItem = document.createElement('div');
-            newItem.className = 'filter-property-item';
-            newItem.innerHTML = `
-                <input type="text" placeholder="ID du filtre (ex: 'auteur')" class="filter-id-input w-1/2" required>
-                <input type="text" placeholder="Label du filtre (ex: 'Auteur')" class="filter-label-input w-1/2" required>
-                <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
-                    &times;
-                </button>
-            `;
-            newItem.querySelector('button').addEventListener('click', () => newItem.remove());
-            container.appendChild(newItem);
+        try {
+            await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+            showGeneralMessage('Catégorie ajoutée avec succès.', 'success');
+            addCategoryForm.reset();
+            newCategoryFilterPropertiesContainer.innerHTML = '';
+        } catch (error) {
+            console.error("Error adding category: ", error);
+            showGeneralMessage('Erreur lors de l\'ajout de la catégorie.', 'error');
         }
+    });
 
-        // Gérer le clic sur le bouton "Ajouter une propriété de filtre" pour la création de catégorie
-        addNewFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(newCategoryFilterPropertiesContainer));
-
-        // Gérer la soumission du formulaire d'ajout de catégorie
-        addCategoryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const categoryName = newCategoryNameInput.value.trim();
-            const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
-            const filters = {};
-            const filterItems = newCategoryFilterPropertiesContainer.querySelectorAll('.filter-property-item');
-            filterItems.forEach(item => {
-                const filterId = item.querySelector('.filter-id-input').value;
-                const filterLabel = item.querySelector('.filter-label-input').value;
-                if (filterId && filterLabel) {
-                    filters[filterId] = filterLabel;
-                }
-            });
-
-            if (!categoryId || Object.keys(filters).length === 0) {
-                showGeneralMessage("Le nom de la catégorie et au moins un filtre sont requis.", 'error');
-                return;
+    // Gérer l'édition d'une catégorie
+    function handleEditCategory(key, data) {
+        editCategoryName.textContent = data.label;
+        editCategoryKeyInput.value = key;
+        editCategoryFilterPropertiesList.innerHTML = '';
+        if (data.filters) {
+            for (const filterId in data.filters) {
+                const filterLabel = data.filters[filterId];
+                const newItem = document.createElement('div');
+                newItem.className = 'filter-property-item';
+                newItem.innerHTML = `
+                    <input type="text" value="${filterId}" class="filter-id-input w-1/2" required>
+                    <input type="text" value="${filterLabel}" class="filter-label-input w-1/2" required>
+                    <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
+                        &times;
+                    </button>
+                `;
+                newItem.querySelector('button').addEventListener('click', () => newItem.remove());
+                editCategoryFilterPropertiesList.appendChild(newItem);
             }
+        }
+        editCategoryModal.classList.add('show');
+    }
 
-            const updatedConfig = {
-                ...categoryConfigData,
-                [categoryId]: {
-                    label: categoryName,
-                    filters: filters
-                }
-            };
-            
-            try {
-                await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
-                showGeneralMessage('Catégorie ajoutée avec succès.', 'success');
-                addCategoryForm.reset();
-                newCategoryFilterPropertiesContainer.innerHTML = '';
-            } catch (error) {
-                console.error("Error adding category: ", error);
-                showGeneralMessage('Erreur lors de l\'ajout de la catégorie.', 'error');
+    // Gérer la soumission du formulaire d'édition de catégorie
+    editCategoryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = editCategoryKeyInput.value;
+        const filters = {};
+        const filterItems = editCategoryFilterPropertiesList.querySelectorAll('.filter-property-item');
+        filterItems.forEach(item => {
+            const filterId = item.querySelector('.filter-id-input').value;
+            const filterLabel = item.querySelector('.filter-label-input').value;
+            if (filterId && filterLabel) {
+                filters[filterId] = filterLabel;
             }
         });
 
-        // Gérer l'édition d'une catégorie
-        function handleEditCategory(key, data) {
-            editCategoryName.textContent = data.label;
-            editCategoryKeyInput.value = key;
-            editCategoryFilterPropertiesList.innerHTML = '';
-            if (data.filters) {
-                for (const filterId in data.filters) {
-                    const filterLabel = data.filters[filterId];
-                    const newItem = document.createElement('div');
-                    newItem.className = 'filter-property-item';
-                    newItem.innerHTML = `
-                        <input type="text" value="${filterId}" class="filter-id-input w-1/2" required>
-                        <input type="text" value="${filterLabel}" class="filter-label-input w-1/2" required>
-                        <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
-                            &times;
-                        </button>
-                    `;
-                    newItem.querySelector('button').addEventListener('click', () => newItem.remove());
-                    editCategoryFilterPropertiesList.appendChild(newItem);
-                }
-            }
-            editCategoryModal.classList.add('show');
-        }
-        
-        // Gérer la soumission du formulaire d'édition de catégorie
-        editCategoryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = editCategoryKeyInput.value;
-            const filters = {};
-            const filterItems = editCategoryFilterPropertiesList.querySelectorAll('.filter-property-item');
-            filterItems.forEach(item => {
-                const filterId = item.querySelector('.filter-id-input').value;
-                const filterLabel = item.querySelector('.filter-label-input').value;
-                if (filterId && filterLabel) {
-                    filters[filterId] = filterLabel;
-                }
-            });
+        const updatedConfig = { ...categoryConfigData, [id]: { ...categoryConfigData[id], filters: filters } };
 
-            const updatedConfig = { ...categoryConfigData, [id]: { ...categoryConfigData[id], filters: filters } };
+        try {
+            await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+            editCategoryModal.classList.remove('show');
+            showGeneralMessage('Filtres de la catégorie mis à jour avec succès.', 'success');
+        } catch (error) {
+            console.error("Error updating category filters: ", error);
+            showGeneralMessage('Erreur lors de la mise à jour des filtres.', 'error');
+        }
+    });
+
+    // Gérer la suppression de catégorie
+    deleteCategoryButton.addEventListener('click', async () => {
+        const id = editCategoryKeyInput.value;
+        if (confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${categoryConfigData[id].label}" ?`)) {
+            const updatedConfig = { ...categoryConfigData };
+            delete updatedConfig[id];
 
             try {
                 await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
                 editCategoryModal.classList.remove('show');
-                showGeneralMessage('Filtres de la catégorie mis à jour avec succès.', 'success');
+                showGeneralMessage('Catégorie supprimée avec succès.', 'success');
             } catch (error) {
-                console.error("Error updating category filters: ", error);
-                showGeneralMessage('Erreur lors de la mise à jour des filtres.', 'error');
+                console.error("Erreur lors de la suppression de la catégorie: ", error);
+                showGeneralMessage('Erreur lors de la suppression de la catégorie.', 'error');
             }
-        });
-        
-        // Gérer la suppression de catégorie
-        deleteCategoryButton.addEventListener('click', async () => {
-            const id = editCategoryKeyInput.value;
-            if (confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${categoryConfigData[id].label}" ?`)) {
-                const updatedConfig = { ...categoryConfigData };
-                delete updatedConfig[id];
-
-                try {
-                    await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
-                    editCategoryModal.classList.remove('show');
-                    showGeneralMessage('Catégorie supprimée avec succès.', 'success');
-                } catch (error) {
-                    console.error("Erreur lors de la suppression de la catégorie: ", error);
-                    showGeneralMessage('Erreur lors de la suppression de la catégorie.', 'error');
-                }
-            }
-        });
-
-        // Fermer la modale d'édition de catégorie
-        document.getElementById('close-category-modal-button').addEventListener('click', () => editCategoryModal.classList.remove('show'));
-        document.getElementById('cancel-category-edit-button').addEventListener('click', () => editCategoryModal.classList.remove('show'));
-        addEditFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(editCategoryFilterPropertiesList));
-
-        // Listeners pour les boutons du menu
-        document.getElementById('menu-btn-show-welcome').addEventListener('click', () => showSection('welcome'));
-        document.getElementById('menu-btn-show-pending').addEventListener('click', () => showSection('pending'));
-        document.getElementById('menu-btn-show-manage').addEventListener('click', () => showSection('manage'));
-        document.getElementById('menu-btn-show-config').addEventListener('click', () => showSection('config'));
-        document.getElementById('change-password-btn').addEventListener('click', () => showSection('password'));
-
-        // Chargement de la configuration des catégories au démarrage de l'application
-        function loadCategoryConfig() {
-            onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
-                if (docSnap.exists()) {
-                    categoryConfigData = docSnap.data();
-                } else {
-                    categoryConfigData = {};
-                }
-                // Si la section de configuration est affichée, la mettre à jour
-                if (!sections['config'].classList.contains('hidden')) {
-                    renderCategoryConfig();
-                }
-            }, (error) => {
-                console.error("Error initializing category config: ", error);
-                categoryConfigData = {};
-            });
         }
-        
-        // Chargement initial de la configuration
-        loadCategoryConfig();
+    });
+
+    // Fermer la modale d'édition de catégorie
+    document.getElementById('close-category-modal-button').addEventListener('click', () => editCategoryModal.classList.remove('show'));
+    document.getElementById('cancel-category-edit-button').addEventListener('click', () => editCategoryModal.classList.remove('show'));
+    addEditFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(editCategoryFilterPropertiesList));
+
+    // Listeners pour les boutons du menu
+    document.getElementById('menu-btn-show-welcome').addEventListener('click', () => showSection('welcome'));
+    document.getElementById('menu-btn-show-pending').addEventListener('click', () => showSection('pending'));
+    document.getElementById('menu-btn-show-manage').addEventListener('click', () => showSection('manage'));
+    document.getElementById('menu-btn-show-config').addEventListener('click', () => showSection('config'));
+    document.getElementById('change-password-btn').addEventListener('click', () => showSection('password'));
+
+    // Chargement de la configuration des catégories au démarrage de l'application
+    function loadCategoryConfig() {
+        onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
+            if (docSnap.exists()) {
+                categoryConfigData = docSnap.data();
+            } else {
+                categoryConfigData = {};
+            }
+            // Si la section de configuration est affichée, la mettre à jour
+            if (!sections['config'].classList.contains('hidden')) {
+                renderCategoryConfig();
+            }
+        }, (error) => {
+            console.error("Error initializing category config: ", error);
+            categoryConfigData = {};
+        });
+    }
+
+    // Chargement initial de la configuration
+    loadCategoryConfig();
     </script>
 </body>
 </html>

@@ -32,6 +32,36 @@
             max-width: 90%;
             text-align: center;
         }
+
+        /* Styles pour la mise en page responsive des cartes */
+        .card-content-wrapper {
+            display: flex;
+            flex-direction: column; /* Colonne par défaut pour mobile */
+            gap: 1rem;
+        }
+        .card-separator {
+            height: 1px;
+            width: 100%;
+            background-color: #e5e7eb;
+        }
+
+        /* Media query pour les écrans plus grands */
+        @media (min-width: 768px) {
+            .card-content-wrapper {
+                flex-direction: row; /* Ligne pour les écrans de taille moyenne et plus */
+                gap: 0;
+            }
+            .card-separator {
+                width: 1px;
+                height: auto;
+            }
+            .card-main-content {
+                padding-right: 1rem;
+            }
+            .card-characteristics {
+                text-align: right;
+            }
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -122,7 +152,7 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const analytics = getAnalytics(app); // Analytics initialized but not actively used in this script
+        const analytics = getAnalytics(app); 
         
         // Define a mapping for property keys to French labels
         const labelMap = {
@@ -204,7 +234,7 @@
             const card = document.createElement('a');
             card.href = item.url;
             card.target = "_blank";
-            card.className = "card block bg-white rounded-lg shadow-md flex p-6";
+            card.className = "card block bg-white rounded-lg shadow-md p-6";
 
             filterProperties.forEach(prop => {
                 if (item[prop]) {
@@ -212,27 +242,34 @@
                 }
             });
 
+            // New wrapper to handle responsive flex direction
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = "card-content-wrapper";
+
             const mainContent = document.createElement('div');
-            mainContent.className = "flex-1 pr-4";
+            mainContent.className = "flex-1 md:pr-4";
             mainContent.innerHTML = `
                 <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
                 <p class="text-gray-600">${item.description}</p>
             `;
-            card.appendChild(mainContent);
+            contentWrapper.appendChild(mainContent);
 
+            // Separator is now a simple div with a CSS class
             const separator = document.createElement('div');
-            separator.className = "w-px bg-gray-200 h-auto mx-4";
-            card.appendChild(separator);
+            separator.className = "card-separator my-4 md:mx-4 md:my-0";
+            contentWrapper.appendChild(separator);
 
             const characteristics = document.createElement('div');
-            characteristics.className = "w-1/4 min-w-max text-right text-sm text-gray-500 flex-none";
+            characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none";
             const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
                 <div>
                     <span class="font-medium">${labelMap[prop] || prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
                 </div>
             `).join('');
             characteristics.innerHTML = characteristicsHtml;
-            card.appendChild(characteristics);
+            contentWrapper.appendChild(characteristics);
+            
+            card.appendChild(contentWrapper);
             
             return card;
         }
@@ -325,7 +362,7 @@
                 });
                 
                 if (matchesSearch && matchesFilters) {
-                    card.style.display = 'flex';
+                    card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
                 }
@@ -374,8 +411,6 @@
                 await addDoc(collection(db, 'suggestions'), newSuggestion);
                 showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
                 suggestionForm.reset(); // Clear the form
-                // Optionally, after submission, you might want to switch back to a category view
-                // For now, it stays on the form with a success message.
             } catch (e) {
                 console.error("Error adding document: ", e);
                 showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');

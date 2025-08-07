@@ -1,462 +1,374 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CDI de L'ékip Teknik</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            padding-top: 100px;
-        }
-        .dark body {
-            background-color: #111827;
-        }
-        .card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .dark .card {
-            background-color: #1f2937;
-        }
-        .dark .card:hover {
-            box-shadow: 0 10px 15px -3px rgba(255, 255, 255, 0.05), 0 4px 6px -2px rgba(255, 255, 255, 0.02);
-        }
-        .active-button {
-            background-color: #4338ca;
-        }
-        .floating-header {
-            position: fixed;
-            top: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            min-width: 590px;
-            max-width: 90%;
-            text-align: center;
-        }
-        .dark .floating-header {
-            background-color: #1f2937;
-            color: #d1d5db;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDI de L'ékip Teknik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            padding-top: 100px;
+        }
+        .card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .active-button {
+            background-color: #4338ca;
+        }
+        .floating-header {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            min-width: 590px;
+            max-width: 90%;
+            text-align: center;
+        }
 
-        .card-content-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .card-separator {
-            height: 1px;
-            width: 100%;
-            background-color: #e5e7eb;
-        }
-        .dark .card-separator {
-            background-color: #374151;
-        }
+        .card-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .card-separator {
+            height: 1px;
+            width: 100%;
+            background-color: #e5e7eb;
+        }
 
-        /* NOUVEAUX STYLES POUR LE BOUTON DARK MODE */
-        #dark-mode-toggle {
-            position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            z-index: 10001;
-            background-color: #4338ca;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 9999px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: background-color 0.2s;
-        }
-        #dark-mode-toggle:hover {
-            background-color: #3730a3;
-        }
-        .dark #dark-mode-toggle {
-            background-color: #1f2937;
-        }
-        .dark #dark-mode-toggle:hover {
-            background-color: #374151;
-        }
-
-        @media (min-width: 768px) {
-            .card-content-wrapper {
-                flex-direction: row;
-                gap: 0;
-            }
-            .card-separator {
-                width: 1px;
-                height: auto;
-            }
-            .card-main-content {
-                padding-right: 1rem;
-            }
-            .card-characteristics {
-                text-align: right;
-            }
-        }
-    </style>
+        @media (min-width: 768px) {
+            .card-content-wrapper {
+                flex-direction: row;
+                gap: 0;
+            }
+            .card-separator {
+                width: 1px;
+                height: auto;
+            }
+            .card-main-content {
+                padding-right: 1rem;
+            }
+            .card-characteristics {
+                text-align: right;
+            }
+        }
+    </style>
 </head>
-<body class="text-gray-800 dark:text-gray-200">
-    
-        <button id="dark-mode-toggle" class="p-2 rounded-full text-white hover:bg-white hover:text-indigo-700 dark:hover:bg-gray-700 dark:hover:text-white transition-colors duration-200">
-        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-    </button>
+<body class="text-gray-800">
 
-    <header class="bg-indigo-700 text-white p-5 shadow-lg rounded-full floating-header transition-all duration-300 ease-in-out dark:bg-gray-800 dark:text-gray-100">
-        <div class="flex items-center justify-between">
-            <div class="flex-1"></div>
-            <div class="flex-1 text-center">
-                <h1 class="text-2xl font-bold">CDI de L'ékip Teknik</h1>
-                <p class="mt-2 text-base font-light hidden md:block">Le centre de ressources pour les militantes et militants de LFI</p>
-            </div>
-            <div class="flex-1 flex justify-end">
-                            </div>
-        </div>
-    </header>
+    <header class="bg-indigo-700 text-white p-5 shadow-lg rounded-full floating-header transition-all duration-300 ease-in-out">
+        <h1 class="text-2xl font-bold">CDI de L'ékip Teknik</h1>
+        <p class="mt-2 text-base font-light hidden md:block">Le centre de ressources pour les militantes et militants de LFI</p>
+    </header>
 
-    <main class="container mx-auto p-4 md:p-8">
+    <main class="container mx-auto p-4 md:p-8">
 
-        <div class="flex flex-wrap justify-center gap-4 mb-8">
-            <button id="btn-petitions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Pétitions</button>
-            <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Comptes utiles</button>
-            <button id="btn-sites-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Sites utiles</button>
-            <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Ouvrages</button>
-            <button id="btn-proposer" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-emerald-600 transition-colors dark:bg-emerald-600 dark:hover:bg-emerald-500">Proposer une ressource</button>
-        </div>
+        <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <button id="btn-petitions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Pétitions</button>
+            <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Comptes utiles</button>
+            <button id="btn-sites-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Sites utiles</button>
+            <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Ouvrages</button>
+            <button id="btn-proposer" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-emerald-600 transition-colors">Proposer une ressource</button>
+        </div>
 
-        <div id="message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+        <div id="message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
 
-        <div id="controls-container" class="hidden">
-            <div id="search-container" class="mb-4">
-                <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400">
-            </div>
+        <div id="controls-container" class="hidden">
+            <div id="search-container" class="mb-4">
+                <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors">
+            </div>
 
-            <div id="filters-container" class="flex flex-wrap gap-4 mb-8">
-            </div>
-        </div>
+            <div id="filters-container" class="flex flex-wrap gap-4 mb-8">
+            </div>
+        </div>
 
-        <div id="suggestion-form-container" class="hidden">
-            <h2 class="text-2xl font-bold text-center mb-4 text-gray-800 dark:text-gray-200">Proposer une nouvelle ressource</h2>
-            <form id="suggestion-form" class="bg-white p-8 rounded-lg shadow-md max-w-xl mx-auto dark:bg-gray-800">
-                <div class="mb-4">
-                    <label for="suggestion-title" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">Titre</label>
-                    <input type="text" id="suggestion-title" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" required>
-                </div>
-                <div class="mb-4">
-                    <label for="suggestion-description" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">Description</label>
-                    <textarea id="suggestion-description" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" rows="3" required></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="suggestion-url" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">URL</label>
-                    <input type="url" id="suggestion-url" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" required>
-                </div>
-                <div class="mb-4">
-                    <label for="suggestion-category" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">Catégorie</label>
-                    <select id="suggestion-category" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" required>
-                        <option value="">Sélectionnez une catégorie</option>
-                        <option value="petitions">Pétition</option>
-                        <option value="comptes-utiles">Compte utile</option>
-                        <option value="sites-utiles">Site utile</option>
-                        <option value="ouvrages">Ouvrage</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-emerald-600 transition-colors dark:bg-emerald-600 dark:hover:bg-emerald-500">Envoyer la proposition</button>
-            </form>
-        </div>
+        <div id="suggestion-form-container" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-4">Proposer une nouvelle ressource</h2>
+            <form id="suggestion-form" class="bg-white p-8 rounded-lg shadow-md max-w-xl mx-auto">
+                <div class="mb-4">
+                    <label for="suggestion-title" class="block text-gray-700 font-semibold mb-2">Titre</label>
+                    <input type="text" id="suggestion-title" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="suggestion-description" class="block text-gray-700 font-semibold mb-2">Description</label>
+                    <textarea id="suggestion-description" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" rows="3" required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="suggestion-url" class="block text-gray-700 font-semibold mb-2">URL</label>
+                    <input type="url" id="suggestion-url" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="suggestion-category" class="block text-gray-700 font-semibold mb-2">Catégorie</label>
+                    <select id="suggestion-category" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
+                        <option value="">Sélectionnez une catégorie</option>
+                        <option value="petitions">Pétition</option>
+                        <option value="comptes-utiles">Compte utile</option>
+                        <option value="sites-utiles">Site utile</option>
+                        <option value="ouvrages">Ouvrage</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-emerald-600 transition-colors">Envoyer la proposition</button>
+            </form>
+        </div>
 
-        <div id="content-container" class="grid grid-cols-1 gap-6">
-            <div class="col-span-full text-center text-gray-500 text-xl mt-12 dark:text-gray-400">
-                <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
-            </div>
-        </div>
+        <div id="content-container" class="grid grid-cols-1 gap-6">
+            <div class="col-span-full text-center text-gray-500 text-xl mt-12">
+                <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
+            </div>
+        </div>
 
-    </main>
+    </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
-        // Dark mode logic
-        const htmlElement = document.documentElement;
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        const sunIcon = document.getElementById('sun-icon');
-        const moonIcon = document.getElementById('moon-icon');
+        const firebaseConfig = {
+            apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
+            authDomain: "cdi-lfi.firebaseapp.com",
+            projectId: "cdi-lfi",
+            storageBucket: "cdi-lfi.firebasestorage.app",
+            messagingSenderId: "626855610699",
+            appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
+            measurementId: "G-EMXFSRL9W0"
+        };
 
-        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app); 
+        
+        const labelMap = {
+            platform: 'Plateforme',
+            struggle: 'Lutte',
+            network: 'Réseau',
+            type: 'Type',
+            publisher: 'Éditeur'
+        };
 
-        if (isDarkMode) {
-            htmlElement.classList.add('dark');
-            sunIcon.classList.remove('hidden');
-            moonIcon.classList.add('hidden');
-        } else {
-            htmlElement.classList.remove('dark');
-            sunIcon.classList.add('hidden');
-            moonIcon.classList.remove('hidden');
-        }
+        const contentContainer = document.getElementById('content-container');
+        const controlsContainer = document.getElementById('controls-container');
+        const searchInput = document.getElementById('search-input');
+        const filtersContainer = document.getElementById('filters-container');
+        const categoryButtons = document.querySelectorAll('.btn');
+        const proposeButton = document.getElementById('btn-proposer');
+        const suggestionFormContainer = document.getElementById('suggestion-form-container');
+        const suggestionForm = document.getElementById('suggestion-form');
+        const messageArea = document.getElementById('message-area');
 
-        darkModeToggle.addEventListener('click', () => {
-            htmlElement.classList.toggle('dark');
-            const isDark = htmlElement.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
-            
-            if (isDark) {
-                sunIcon.classList.remove('hidden');
-                moonIcon.classList.add('hidden');
-            } else {
-                sunIcon.classList.add('hidden');
-                moonIcon.classList.remove('hidden');
-            }
-        });
+        let currentCategory = null;
 
-        // Firebase logic
-        const firebaseConfig = {
-            apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
-            authDomain: "cdi-lfi.firebaseapp.com",
-            projectId: "cdi-lfi",
-            storageBucket: "cdi-lfi.firebasestorage.app",
-            messagingSenderId: "626855610699",
-            appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
-            measurementId: "G-EMXFSRL9W0"
-        };
+        function showMessage(message, type) {
+            messageArea.textContent = message;
+            messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            if (type === 'success') {
+                messageArea.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                messageArea.classList.add('bg-red-100', 'text-red-800');
+            }
+            setTimeout(() => {
+                messageArea.classList.add('hidden');
+            }, 5000);
+        }
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const analytics = getAnalytics(app); 
-        
-        const labelMap = {
-            platform: 'Plateforme',
-            struggle: 'Lutte',
-            network: 'Réseau',
-            type: 'Type',
-            publisher: 'Éditeur'
-        };
+        function createCard(item, filterProperties) {
+            const card = document.createElement('a');
+            card.href = item.url;
+            card.target = "_blank";
+            card.className = "card block bg-white rounded-lg shadow-md p-6";
 
-        const contentContainer = document.getElementById('content-container');
-        const controlsContainer = document.getElementById('controls-container');
-        const searchInput = document.getElementById('search-input');
-        const filtersContainer = document.getElementById('filters-container');
-        const categoryButtons = document.querySelectorAll('.btn');
-        const proposeButton = document.getElementById('btn-proposer');
-        const suggestionFormContainer = document.getElementById('suggestion-form-container');
-        const suggestionForm = document.getElementById('suggestion-form');
-        const messageArea = document.getElementById('message-area');
+            filterProperties.forEach(prop => {
+                if (item[prop]) {
+                    card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
+                }
+            });
 
-        let currentCategory = null;
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = "card-content-wrapper";
 
-        function showMessage(message, type) {
-            messageArea.textContent = message;
-            messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-            if (type === 'success') {
-                messageArea.classList.add('bg-green-100', 'text-green-800');
-            } else if (type === 'error') {
-                messageArea.classList.add('bg-red-100', 'text-red-800');
-            }
-            setTimeout(() => {
-                messageArea.classList.add('hidden');
-            }, 5000);
-        }
+            const mainContent = document.createElement('div');
+            mainContent.className = "flex-1 md:pr-4";
+            mainContent.innerHTML = `
+                <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
+                <p class="text-gray-600">${item.description}</p>
+            `;
+            contentWrapper.appendChild(mainContent);
 
-        function createCard(item, filterProperties) {
-            const card = document.createElement('a');
-            card.href = item.url;
-            card.target = "_blank";
-            card.className = "card block bg-white rounded-lg shadow-md p-6 dark:bg-gray-800";
+            const separator = document.createElement('div');
+            separator.className = "card-separator my-4 md:mx-4 md:my-0";
+            contentWrapper.appendChild(separator);
 
-            filterProperties.forEach(prop => {
-                if (item[prop]) {
-                    card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
-                }
-            });
+            const characteristics = document.createElement('div');
+            characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none";
+            const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
+                <div>
+                    <span class="font-medium">${labelMap[prop] || prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
+                </div>
+            `).join('');
+            characteristics.innerHTML = characteristicsHtml;
+            contentWrapper.appendChild(characteristics);
+            
+            card.appendChild(contentWrapper);
+            
+            return card;
+        }
 
-            const contentWrapper = document.createElement('div');
-            contentWrapper.className = "card-content-wrapper";
+        async function renderCategory(categoryKey) {
+            suggestionFormContainer.classList.add('hidden');
+            messageArea.classList.add('hidden');
+            contentContainer.innerHTML = '<div class="col-span-full text-center text-indigo-500 text-xl mt-12"><p>Chargement des ressources...</p></div>';
+            filtersContainer.innerHTML = '';
+            controlsContainer.classList.remove('hidden');
+            
+            searchInput.value = '';
+            currentCategory = categoryKey;
 
-            const mainContent = document.createElement('div');
-            mainContent.className = "flex-1 md:pr-4";
-            mainContent.innerHTML = `
-                <h3 class="text-xl font-semibold text-indigo-800 mb-2 dark:text-indigo-400">${item.title}</h3>
-                <p class="text-gray-600 dark:text-gray-400">${item.description}</p>
-            `;
-            contentWrapper.appendChild(mainContent);
+            try {
+                const q = query(collection(db, 'resources'), where('category', '==', categoryKey));
+                const querySnapshot = await getDocs(q);
 
-            const separator = document.createElement('div');
-            separator.className = "card-separator my-4 md:mx-4 md:my-0";
-            contentWrapper.appendChild(separator);
+                const items = querySnapshot.docs.map(doc => doc.data());
 
-            const characteristics = document.createElement('div');
-            characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none dark:text-gray-400";
-            const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
-                <div>
-                    <span class="font-medium">${labelMap[prop] || prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
-                </div>
-            `).join('');
-            characteristics.innerHTML = characteristicsHtml;
-            contentWrapper.appendChild(characteristics);
-            
-            card.appendChild(contentWrapper);
-            
-            return card;
-        }
+                if (items.length === 0) {
+                    contentContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xl mt-12"><p>Aucune ressource validée n\'a été trouvée pour cette catégorie.</p></div>';
+                    return;
+                }
 
-        async function renderCategory(categoryKey) {
-            suggestionFormContainer.classList.add('hidden');
-            messageArea.classList.add('hidden');
-            contentContainer.innerHTML = '<div class="col-span-full text-center text-indigo-500 text-xl mt-12"><p>Chargement des ressources...</p></div>';
-            filtersContainer.innerHTML = '';
-            controlsContainer.classList.remove('hidden');
-            
-            searchInput.value = '';
-            currentCategory = categoryKey;
+                contentContainer.innerHTML = '';
 
-            try {
-                const q = query(collection(db, 'resources'), where('category', '==', categoryKey));
-                const querySnapshot = await getDocs(q);
+                const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
+            
+                filterProperties.forEach(prop => {
+                    const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
+                    
+                    const filterGroup = document.createElement('div');
+                    filterGroup.className = 'flex flex-col';
+                    
+                    const filterLabel = document.createElement('label');
+                    filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
+                    filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
+                    filterGroup.appendChild(filterLabel);
+                    
+                    const filterSelect = document.createElement('select');
+                    filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
+                    filterSelect.setAttribute('data-filter-property', prop);
+                    filterSelect.addEventListener('change', filterContent);
 
-                const items = querySnapshot.docs.map(doc => doc.data());
+                    const allOption = document.createElement('option');
+                    allOption.value = 'all';
+                    allOption.textContent = 'Tous';
+                    filterSelect.appendChild(allOption);
 
-                if (items.length === 0) {
-                    contentContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xl mt-12 dark:text-gray-400"><p>Aucune ressource validée n\'a été trouvée pour cette catégorie.</p></div>';
-                    return;
-                }
+                    uniqueFilters.forEach(filterValue => {
+                        const option = document.createElement('option');
+                        option.value = filterValue.toLowerCase();
+                        option.textContent = filterValue;
+                        filterSelect.appendChild(option);
+                    });
 
-                contentContainer.innerHTML = '';
+                    filterGroup.appendChild(filterSelect);
+                    filtersContainer.appendChild(filterGroup);
+                });
 
-                const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
-            
-                filterProperties.forEach(prop => {
-                    const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
-                    
-                    const filterGroup = document.createElement('div');
-                    filterGroup.className = 'flex flex-col';
-                    
-                    const filterLabel = document.createElement('label');
-                    filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm dark:text-gray-300';
-                    filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
-                    filterGroup.appendChild(filterLabel);
-                    
-                    const filterSelect = document.createElement('select');
-                    filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400';
-                    filterSelect.setAttribute('data-filter-property', prop);
-                    filterSelect.addEventListener('change', filterContent);
+                items.forEach(item => {
+                    contentContainer.appendChild(createCard(item, filterProperties));
+                });
+            } catch (e) {
+                console.error("Error fetching documents: ", e);
+                contentContainer.innerHTML = '<div class="col-span-full text-center text-red-500 text-xl mt-12"><p>Une erreur est survenue lors du chargement des ressources.</p></div>';
+            }
+        }
 
-                    const allOption = document.createElement('option');
-                    allOption.value = 'all';
-                    allOption.textContent = 'Tous';
-                    filterSelect.appendChild(allOption);
+        function filterContent() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const cards = contentContainer.querySelectorAll('.card');
+            const filterSelects = filtersContainer.querySelectorAll('select');
+            
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+                
+                let matchesFilters = true;
+                filterSelects.forEach(select => {
+                    const prop = select.getAttribute('data-filter-property');
+                    const filterValue = select.value;
 
-                    uniqueFilters.forEach(filterValue => {
-                        const option = document.createElement('option');
-                        option.value = filterValue.toLowerCase();
-                        option.textContent = filterValue;
-                        filterSelect.appendChild(option);
-                    });
+                    if (filterValue !== 'all') {
+                        const cardFilterValue = card.getAttribute(`data-${prop}`);
+                        if (!cardFilterValue || cardFilterValue !== filterValue) {
+                            matchesFilters = false;
+                        }
+                    }
+                });
+                
+                if (matchesSearch && matchesFilters) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
 
-                    filterGroup.appendChild(filterSelect);
-                    filtersContainer.appendChild(filterGroup);
-                });
+        function showProposeForm() {
+            categoryButtons.forEach(btn => btn.classList.remove('active-button'));
+            controlsContainer.classList.add('hidden');
+            contentContainer.classList.add('hidden');
+            messageArea.classList.add('hidden');
+            
+            suggestionFormContainer.classList.remove('hidden');
+            suggestionForm.reset();
+        }
 
-                items.forEach(item => {
-                    contentContainer.appendChild(createCard(item, filterProperties));
-                });
-            } catch (e) {
-                console.error("Error fetching documents: ", e);
-                contentContainer.innerHTML = '<div class="col-span-full text-center text-red-500 text-xl mt-12 dark:text-red-400"><p>Une erreur est survenue lors du chargement des ressources.</p></div>';
-            }
-        }
+        async function handleSuggestionSubmit(event) {
+            event.preventDefault();
 
-        function filterContent() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const cards = contentContainer.querySelectorAll('.card');
-            const filterSelects = filtersContainer.querySelectorAll('select');
-            
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
-                
-                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
-                
-                let matchesFilters = true;
-                filterSelects.forEach(select => {
-                    const prop = select.getAttribute('data-filter-property');
-                    const filterValue = select.value;
+            const title = document.getElementById('suggestion-title').value;
+            const description = document.getElementById('suggestion-description').value;
+            const url = document.getElementById('suggestion-url').value;
+            const category = document.getElementById('suggestion-category').value;
 
-                    if (filterValue !== 'all') {
-                        const cardFilterValue = card.getAttribute(`data-${prop}`);
-                        if (!cardFilterValue || cardFilterValue !== filterValue) {
-                            matchesFilters = false;
-                        }
-                    }
-                });
-                
-                if (matchesSearch && matchesFilters) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
+            const newSuggestion = {
+                title,
+                description,
+                url,
+                category,
+                createdAt: serverTimestamp(),
+                status: 'pending'
+            };
 
-        function showProposeForm() {
-            categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-            controlsContainer.classList.add('hidden');
-            contentContainer.classList.add('hidden');
-            messageArea.classList.add('hidden');
-            
-            suggestionFormContainer.classList.remove('hidden');
-            suggestionForm.reset();
-        }
+            try {
+                await addDoc(collection(db, 'pending'), newSuggestion);
+                showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
+                suggestionForm.reset();
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');
+            }
+        }
 
-        async function handleSuggestionSubmit(event) {
-            event.preventDefault();
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                categoryButtons.forEach(btn => btn.classList.remove('active-button'));
+                button.classList.add('active-button');
+                
+                const categoryKey = button.id.replace('btn-', '');
+                renderCategory(categoryKey);
+            });
+        });
 
-            const title = document.getElementById('suggestion-title').value;
-            const description = document.getElementById('suggestion-description').value;
-            const url = document.getElementById('suggestion-url').value;
-            const category = document.getElementById('suggestion-category').value;
-
-            const newSuggestion = {
-                title,
-                description,
-                url,
-                category,
-                createdAt: serverTimestamp(),
-                status: 'pending'
-            };
-
-            try {
-                await addDoc(collection(db, 'pending'), newSuggestion);
-                showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
-                suggestionForm.reset();
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');
-            }
-        }
-
-        categoryButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-                button.classList.add('active-button');
-                
-                const categoryKey = button.id.replace('btn-', '');
-                renderCategory(categoryKey);
-            });
-        });
-
-        proposeButton.addEventListener('click', showProposeForm);
-        searchInput.addEventListener('keyup', filterContent);
-        suggestionForm.addEventListener('submit', handleSuggestionSubmit);
-    </script>
+        proposeButton.addEventListener('click', showProposeForm);
+        searchInput.addEventListener('keyup', filterContent);
+        suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+    </script>
 </body>
 </html>

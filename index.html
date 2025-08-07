@@ -12,12 +12,21 @@
             background-color: #f3f4f6;
             padding-top: 100px;
         }
+        .dark body {
+            background-color: #111827;
+        }
         .card {
             transition: transform 0.2s, box-shadow 0.2s;
         }
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .dark .card {
+            background-color: #1f2937;
+        }
+        .dark .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(255, 255, 255, 0.05), 0 4px 6px -2px rgba(255, 255, 255, 0.02);
         }
         .active-button {
             background-color: #4338ca;
@@ -32,6 +41,10 @@
             max-width: 90%;
             text-align: center;
         }
+        .dark .floating-header {
+            background-color: #1f2937;
+            color: #d1d5db;
+        }
 
         .card-content-wrapper {
             display: flex;
@@ -42,6 +55,9 @@
             height: 1px;
             width: 100%;
             background-color: #e5e7eb;
+        }
+        .dark .card-separator {
+            background-color: #374151;
         }
 
         @media (min-width: 768px) {
@@ -62,28 +78,43 @@
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-gray-800 dark:text-gray-200">
 
-    <header class="bg-indigo-700 text-white p-5 shadow-lg rounded-full floating-header transition-all duration-300 ease-in-out">
-        <h1 class="text-2xl font-bold">CDI de L'ékip Teknik</h1>
-        <p class="mt-2 text-base font-light hidden md:block">Le centre de ressources pour les militantes et militants de LFI</p>
+    <header class="bg-indigo-700 text-white p-5 shadow-lg rounded-full floating-header transition-all duration-300 ease-in-out dark:bg-gray-800 dark:text-gray-100">
+        <div class="flex items-center justify-between">
+            <div class="flex-1"></div>
+            <div class="flex-1 text-center">
+                <h1 class="text-2xl font-bold">CDI de L'ékip Teknik</h1>
+                <p class="mt-2 text-base font-light hidden md:block">Le centre de ressources pour les militantes et militants de LFI</p>
+            </div>
+            <div class="flex-1 flex justify-end">
+                <button id="dark-mode-toggle" class="p-2 rounded-full text-white hover:bg-white hover:text-indigo-700 dark:hover:bg-gray-700 dark:hover:text-white transition-colors duration-200">
+                    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
     </header>
 
     <main class="container mx-auto p-4 md:p-8">
 
         <div class="flex flex-wrap justify-center gap-4 mb-8">
-            <button id="btn-petitions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Pétitions</button>
-            <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Comptes utiles</button>
-            <button id="btn-sites-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Sites utiles</button>
-            <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors">Ouvrages</button>
-            <button id="btn-proposer" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-emerald-600 transition-colors">Proposer une ressource</button>
+            <button id="btn-petitions" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Pétitions</button>
+            <button id="btn-comptes-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Comptes utiles</button>
+            <button id="btn-sites-utiles" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Sites utiles</button>
+            <button id="btn-ouvrages" class="btn bg-indigo-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-indigo-700 transition-colors dark:bg-indigo-700 dark:hover:bg-indigo-600">Ouvrages</button>
+            <button id="btn-proposer" class="bg-emerald-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-emerald-600 transition-colors dark:bg-emerald-600 dark:hover:bg-emerald-500">Proposer une ressource</button>
         </div>
 
         <div id="message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
 
         <div id="controls-container" class="hidden">
             <div id="search-container" class="mb-4">
-                <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors">
+                <input type="text" id="search-input" placeholder="Rechercher..." class="w-full p-3 rounded-full border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400">
             </div>
 
             <div id="filters-container" class="flex flex-wrap gap-4 mb-8">
@@ -91,23 +122,23 @@
         </div>
 
         <div id="suggestion-form-container" class="hidden">
-            <h2 class="text-2xl font-bold text-center mb-4">Proposer une nouvelle ressource</h2>
-            <form id="suggestion-form" class="bg-white p-8 rounded-lg shadow-md max-w-xl mx-auto">
+            <h2 class="text-2xl font-bold text-center mb-4 text-gray-800 dark:text-gray-200">Proposer une nouvelle ressource</h2>
+            <form id="suggestion-form" class="bg-white p-8 rounded-lg shadow-md max-w-xl mx-auto dark:bg-gray-800">
                 <div class="mb-4">
-                    <label for="suggestion-title" class="block text-gray-700 font-semibold mb-2">Titre</label>
-                    <input type="text" id="suggestion-title" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
+                    <label for="suggestion-title" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">Titre</label>
+                    <input type="text" id="suggestion-title" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" required>
                 </div>
                 <div class="mb-4">
-                    <label for="suggestion-description" class="block text-gray-700 font-semibold mb-2">Description</label>
-                    <textarea id="suggestion-description" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" rows="3" required></textarea>
+                    <label for="suggestion-description" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">Description</label>
+                    <textarea id="suggestion-description" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" rows="3" required></textarea>
                 </div>
                 <div class="mb-4">
-                    <label for="suggestion-url" class="block text-gray-700 font-semibold mb-2">URL</label>
-                    <input type="url" id="suggestion-url" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
+                    <label for="suggestion-url" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">URL</label>
+                    <input type="url" id="suggestion-url" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" required>
                 </div>
                 <div class="mb-4">
-                    <label for="suggestion-category" class="block text-gray-700 font-semibold mb-2">Catégorie</label>
-                    <select id="suggestion-category" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
+                    <label for="suggestion-category" class="block text-gray-700 font-semibold mb-2 dark:text-gray-300">Catégorie</label>
+                    <select id="suggestion-category" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400" required>
                         <option value="">Sélectionnez une catégorie</option>
                         <option value="petitions">Pétition</option>
                         <option value="comptes-utiles">Compte utile</option>
@@ -115,12 +146,12 @@
                         <option value="ouvrages">Ouvrage</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-emerald-600 transition-colors">Envoyer la proposition</button>
+                <button type="submit" class="w-full bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-emerald-600 transition-colors dark:bg-emerald-600 dark:hover:bg-emerald-500">Envoyer la proposition</button>
             </form>
         </div>
 
         <div id="content-container" class="grid grid-cols-1 gap-6">
-            <div class="col-span-full text-center text-gray-500 text-xl mt-12">
+            <div class="col-span-full text-center text-gray-500 text-xl mt-12 dark:text-gray-400">
                 <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
             </div>
         </div>
@@ -132,6 +163,39 @@
         import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
+        // Dark mode logic
+        const htmlElement = document.documentElement;
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+        if (isDarkMode) {
+            htmlElement.classList.add('dark');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        } else {
+            htmlElement.classList.remove('dark');
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            const isDark = htmlElement.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            
+            if (isDark) {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        });
+
+        // Firebase logic
         const firebaseConfig = {
             apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
             authDomain: "cdi-lfi.firebaseapp.com",
@@ -183,7 +247,7 @@
             const card = document.createElement('a');
             card.href = item.url;
             card.target = "_blank";
-            card.className = "card block bg-white rounded-lg shadow-md p-6";
+            card.className = "card block bg-white rounded-lg shadow-md p-6 dark:bg-gray-800";
 
             filterProperties.forEach(prop => {
                 if (item[prop]) {
@@ -197,8 +261,8 @@
             const mainContent = document.createElement('div');
             mainContent.className = "flex-1 md:pr-4";
             mainContent.innerHTML = `
-                <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
-                <p class="text-gray-600">${item.description}</p>
+                <h3 class="text-xl font-semibold text-indigo-800 mb-2 dark:text-indigo-400">${item.title}</h3>
+                <p class="text-gray-600 dark:text-gray-400">${item.description}</p>
             `;
             contentWrapper.appendChild(mainContent);
 
@@ -207,7 +271,7 @@
             contentWrapper.appendChild(separator);
 
             const characteristics = document.createElement('div');
-            characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none";
+            characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none dark:text-gray-400";
             const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
                 <div>
                     <span class="font-medium">${labelMap[prop] || prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
@@ -238,7 +302,7 @@
                 const items = querySnapshot.docs.map(doc => doc.data());
 
                 if (items.length === 0) {
-                    contentContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xl mt-12"><p>Aucune ressource validée n\'a été trouvée pour cette catégorie.</p></div>';
+                    contentContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xl mt-12 dark:text-gray-400"><p>Aucune ressource validée n\'a été trouvée pour cette catégorie.</p></div>';
                     return;
                 }
 
@@ -253,12 +317,12 @@
                     filterGroup.className = 'flex flex-col';
                     
                     const filterLabel = document.createElement('label');
-                    filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
+                    filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm dark:text-gray-300';
                     filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
                     filterGroup.appendChild(filterLabel);
                     
                     const filterSelect = document.createElement('select');
-                    filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
+                    filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:focus:border-indigo-400';
                     filterSelect.setAttribute('data-filter-property', prop);
                     filterSelect.addEventListener('change', filterContent);
 
@@ -283,7 +347,7 @@
                 });
             } catch (e) {
                 console.error("Error fetching documents: ", e);
-                contentContainer.innerHTML = '<div class="col-span-full text-center text-red-500 text-xl mt-12"><p>Une erreur est survenue lors du chargement des ressources.</p></div>';
+                contentContainer.innerHTML = '<div class="col-span-full text-center text-red-500 text-xl mt-12 dark:text-red-400"><p>Une erreur est survenue lors du chargement des ressources.</p></div>';
             }
         }
 

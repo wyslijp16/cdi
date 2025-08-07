@@ -368,51 +368,9 @@
                     <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>
                 </div>
             </div>
-            <div id="manage-config-section" class="hidden">
-                <h2 class="text-2xl font-bold text-center mb-6">Gérer les catégories et leurs filtres</h2>
-                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                    <h3 class="text-xl font-bold mb-4">Catégories actuelles</h3>
-                    <div id="categories-config-list" class="grid grid-cols-1 gap-4">
-                        <p class="text-gray-500">Chargement de la configuration...</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
-                    <form id="add-category-form">
-                        <div class="modal-form-group">
-                            <label for="new-category-name-input">Nom de la Catégorie (ex: 'Livres')</label>
-                            <input type="text" id="new-category-name-input" class="w-full" required>
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-label-input">Label de la Catégorie</label>
-                            <input type="text" id="new-category-label-input" class="w-full" required>
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-description-input">Description de la Catégorie</label>
-                            <textarea id="new-category-description-input" class="w-full" rows="2"></textarea>
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-color-input">Couleur de la Catégorie</label>
-                            <input type="color" id="new-category-color-input" class="w-full">
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-order-input">Ordre d'affichage</label>
-                            <input type="number" id="new-category-order-input" class="w-full" min="0">
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-filter-properties">Propriétés de Filtre</label>
-                            <div id="new-category-filter-properties-container">
-                                <!-- Les champs de filtre seront ajoutés ici -->
-                            </div>
-                            <button type="button" id="add-new-filter-property-button" class="mt-2 text-indigo-600 font-semibold text-sm">
-                                + Ajouter une propriété de filtre
-                            </button>
-                        </div>
-                        <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition mt-4">
-                            Ajouter la Catégorie
-                        </button>
-                    </form>
-                </div>
+            <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+                <h3 class="text-xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
+                <button id="open-add-category-modal" class="bg-indigo-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl hover:bg-indigo-700 transition">+</button>
             </div>
             <!-- Section pour changer le mot de passe -->
             <div id="change-password-section" class="hidden bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
@@ -491,6 +449,49 @@
                     <button type="button" id="delete-category-button" class="btn-delete-resource">Supprimer la catégorie</button>
                     <button type="button" id="cancel-category-edit-button" class="btn-cancel">Annuler</button>
                     <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Modale de création/édition de catégorie -->
+    <div id="category-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button" id="close-category-modal">&times;</button>
+            <h3 class="text-2xl font-bold mb-4" id="category-modal-title">Ajouter une catégorie</h3>
+            <form id="category-form">
+                <input type="hidden" id="category-form-mode" value="create">
+                <input type="hidden" id="category-form-key">
+                <div class="modal-form-group">
+                    <label for="category-name-input">Nom de la Catégorie (ex: 'Livres')</label>
+                    <input type="text" id="category-name-input" class="w-full" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="category-label-input">Label de la Catégorie</label>
+                    <input type="text" id="category-label-input" class="w-full" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="category-description-input">Description de la Catégorie</label>
+                    <textarea id="category-description-input" class="w-full" rows="2"></textarea>
+                </div>
+                <div class="modal-form-group">
+                    <label for="category-color-input">Couleur de la Catégorie</label>
+                    <input type="color" id="category-color-input" class="w-full">
+                </div>
+                <div class="modal-form-group">
+                    <label for="category-order-input">Ordre d'affichage</label>
+                    <input type="number" id="category-order-input" class="w-full" min="0">
+                </div>
+                <div class="modal-form-group">
+                    <label>Propriétés de Filtre</label>
+                    <div id="category-filter-properties-container"></div>
+                    <button type="button" id="add-filter-property-button" class="mt-2 text-indigo-600 font-semibold text-sm">
+                        + Ajouter une propriété de filtre
+                    </button>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" id="delete-category-btn" class="btn-delete-resource hidden">Supprimer la catégorie</button>
+                    <button type="button" id="cancel-category-btn" class="btn-cancel">Annuler</button>
+                    <button type="submit" class="btn-save">Enregistrer</button>
                 </div>
             </form>
         </div>
@@ -580,7 +581,6 @@
     const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
     const resourcesList = document.getElementById('resources-list');
     const categoriesConfigList = document.getElementById('categories-config-list');
-    const addCategoryForm = document.getElementById('add-category-form');
     const newCategoryNameInput = document.getElementById('new-category-name-input');
     const newCategoryLabelInput = document.getElementById('new-category-label-input');
     const newCategoryDescriptionInput = document.getElementById('new-category-description-input');
@@ -972,6 +972,34 @@
         }
     });
 
+    const categoryModal = document.getElementById('category-modal');
+    const openAddCategoryModalBtn = document.getElementById('open-add-category-modal');
+    const closeCategoryModalBtn = document.getElementById('close-category-modal');
+    const categoryForm = document.getElementById('category-form');
+    const categoryModalTitle = document.getElementById('category-modal-title');
+    const categoryFormMode = document.getElementById('category-form-mode');
+    const categoryFormKey = document.getElementById('category-form-key');
+    const categoryNameInput = document.getElementById('category-name-input');
+    const categoryLabelInput = document.getElementById('category-label-input');
+    const categoryDescriptionInput = document.getElementById('category-description-input');
+    const categoryColorInput = document.getElementById('category-color-input');
+    const categoryOrderInput = document.getElementById('category-order-input');
+    const categoryFilterPropertiesContainer = document.getElementById('category-filter-properties-container');
+    const addFilterPropertyButton = document.getElementById('add-filter-property-button');
+    const deleteCategoryBtn = document.getElementById('delete-category-btn');
+    const cancelCategoryBtn = document.getElementById('cancel-category-btn');
+
+    // Ouvre la modale en mode création
+    openAddCategoryModalBtn.addEventListener('click', () => {
+        categoryModalTitle.textContent = "Ajouter une catégorie";
+        categoryFormMode.value = "create";
+        categoryFormKey.value = "";
+        categoryForm.reset();
+        categoryFilterPropertiesContainer.innerHTML = "";
+        deleteCategoryBtn.classList.add('hidden');
+        categoryModal.classList.add('show');
+    });
+
     // Gérer la suppression d'une ressource
     deleteResourceButton.addEventListener('click', async () => {
         const resourceId = editResourceId.value;
@@ -1085,14 +1113,15 @@
 
     // Gérer l'édition d'une catégorie
     function handleEditCategory(key, data) {
-        editCategoryName.textContent = key;
-        editCategoryKeyInput.value = key;
-        editCategoryLabelInput.value = data.label || '';
-        editCategoryDescriptionInput.value = data.description || '';
-        editCategoryColorInput.value = data.color || '#000000';
-        editCategoryOrderInput.value = data.order || '';
-
-        editCategoryFilterPropertiesList.innerHTML = '';
+        categoryModalTitle.textContent = "Modifier la catégorie";
+        categoryFormMode.value = "edit";
+        categoryFormKey.value = key;
+        categoryNameInput.value = key;
+        categoryLabelInput.value = data.label || '';
+        categoryDescriptionInput.value = data.description || '';
+        categoryColorInput.value = data.color || '#000000';
+        categoryOrderInput.value = data.order || '';
+        categoryFilterPropertiesContainer.innerHTML = '';
         if (Array.isArray(data.filters)) {
             data.filters.forEach(filterObj => {
                 const newItem = document.createElement('div');
@@ -1105,11 +1134,46 @@
                     </button>
                 `;
                 newItem.querySelector('button').addEventListener('click', () => newItem.remove());
-                editCategoryFilterPropertiesList.appendChild(newItem);
+                categoryFilterPropertiesContainer.appendChild(newItem);
             });
         }
-        editCategoryModal.classList.add('show');
+        deleteCategoryBtn.classList.remove('hidden');
+        categoryModal.classList.add('show');
     }
+
+    addFilterPropertyButton.addEventListener('click', () => {
+        const newItem = document.createElement('div');
+        newItem.className = 'filter-property-item';
+        newItem.innerHTML = `
+            <input type="text" placeholder="ID du filtre (ex: 'auteur')" class="filter-id-input w-1/2" required>
+            <input type="text" placeholder="Label du filtre (ex: 'Auteur')" class="filter-label-input w-1/2" required>
+            <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
+                &times;
+            </button>
+        `;
+        newItem.querySelector('button').addEventListener('click', () => newItem.remove());
+        categoryFilterPropertiesContainer.appendChild(newItem);
+    });
+
+    deleteCategoryBtn.addEventListener('click', async () => {
+        const key = categoryFormKey.value;
+        if (confirm(`Supprimer la catégorie "${key}" ?`)) {
+            let updatedConfig = { ...categoryConfigData };
+            delete updatedConfig[key];
+            try {
+                await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+                showGeneralMessage('Catégorie supprimée.', 'success');
+                categoryModal.classList.remove('show');
+            } catch (error) {
+                showGeneralMessage('Erreur lors de la suppression.', 'error');
+            }
+        }
+    });
+
+    closeCategoryModalBtn.addEventListener('click', () => categoryModal.classList.remove('show'));
+    cancelCategoryBtn.addEventListener('click', () => categoryModal.classList.remove('show'));
+
+    card.querySelector('.btn-edit-category').addEventListener('click', () => handleEditCategory(key, data));
 
     // Gérer la soumission du formulaire d'édition de catégorie
     editCategoryForm.addEventListener('submit', async (e) => {

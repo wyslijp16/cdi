@@ -119,7 +119,6 @@
             </form>
         </div>
 
-
         <div id="content-container" class="grid grid-cols-1 gap-6">
             <div class="col-span-full text-center text-gray-500 text-xl mt-12">
                 <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
@@ -130,7 +129,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
 
         const firebaseConfig = {
@@ -154,8 +153,6 @@
             type: 'Type',
             publisher: 'Éditeur'
         };
-
-        const contentData = {};
 
         const contentContainer = document.getElementById('content-container');
         const controlsContainer = document.getElementById('controls-container');
@@ -224,58 +221,70 @@
             return card;
         }
 
-        function renderCategory(categoryKey) {
+        async function renderCategory(categoryKey) {
             suggestionFormContainer.classList.add('hidden');
             messageArea.classList.add('hidden');
-
-            contentContainer.innerHTML = '';
+            contentContainer.innerHTML = '<div class="col-span-full text-center text-indigo-500 text-xl mt-12"><p>Chargement des ressources...</p></div>';
             filtersContainer.innerHTML = '';
             controlsContainer.classList.remove('hidden');
-            contentContainer.classList.remove('hidden');
-            currentCategory = categoryKey;
             
             searchInput.value = '';
+            currentCategory = categoryKey;
 
-            const items = contentData[categoryKey];
-            if (!items) return;
+            try {
+                const q = query(collection(db, 'suggestions'), where('category', '==', categoryKey), where('status', '==', 'validated'));
+                const querySnapshot = await getDocs(q);
 
-            const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
+                const items = querySnapshot.docs.map(doc => doc.data());
+
+                if (items.length === 0) {
+                    contentContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xl mt-12"><p>Aucune ressource validée n\'a été trouvée pour cette catégorie.</p></div>';
+                    return;
+                }
+
+                contentContainer.innerHTML = '';
+
+                const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
             
-            filterProperties.forEach(prop => {
-                const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
-                
-                const filterGroup = document.createElement('div');
-                filterGroup.className = 'flex flex-col';
-                
-                const filterLabel = document.createElement('label');
-                filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
-                filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
-                filterGroup.appendChild(filterLabel);
-                
-                const filterSelect = document.createElement('select');
-                filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
-                filterSelect.setAttribute('data-filter-property', prop);
-                filterSelect.addEventListener('change', filterContent);
+                filterProperties.forEach(prop => {
+                    const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
+                    
+                    const filterGroup = document.createElement('div');
+                    filterGroup.className = 'flex flex-col';
+                    
+                    const filterLabel = document.createElement('label');
+                    filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
+                    filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
+                    filterGroup.appendChild(filterLabel);
+                    
+                    const filterSelect = document.createElement('select');
+                    filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
+                    filterSelect.setAttribute('data-filter-property', prop);
+                    filterSelect.addEventListener('change', filterContent);
 
-                const allOption = document.createElement('option');
-                allOption.value = 'all';
-                allOption.textContent = 'Tous';
-                filterSelect.appendChild(allOption);
+                    const allOption = document.createElement('option');
+                    allOption.value = 'all';
+                    allOption.textContent = 'Tous';
+                    filterSelect.appendChild(allOption);
 
-                uniqueFilters.forEach(filterValue => {
-                    const option = document.createElement('option');
-                    option.value = filterValue.toLowerCase();
-                    option.textContent = filterValue;
-                    filterSelect.appendChild(option);
+                    uniqueFilters.forEach(filterValue => {
+                        const option = document.createElement('option');
+                        option.value = filterValue.toLowerCase();
+                        option.textContent = filterValue;
+                        filterSelect.appendChild(option);
+                    });
+
+                    filterGroup.appendChild(filterSelect);
+                    filtersContainer.appendChild(filterGroup);
                 });
 
-                filterGroup.appendChild(filterSelect);
-                filtersContainer.appendChild(filterGroup);
-            });
-
-            items.forEach(item => {
-                contentContainer.appendChild(createCard(item, filterProperties));
-            });
+                items.forEach(item => {
+                    contentContainer.appendChild(createCard(item, filterProperties));
+                });
+            } catch (e) {
+                console.error("Error fetching documents: ", e);
+                contentContainer.innerHTML = '<div class="col-span-full text-center text-red-500 text-xl mt-12"><p>Une erreur est survenue lors du chargement des ressources.</p></div>';
+            }
         }
 
         function filterContent() {
@@ -360,7 +369,6 @@
         proposeButton.addEventListener('click', showProposeForm);
         searchInput.addEventListener('keyup', filterContent);
         suggestionForm.addEventListener('submit', handleSuggestionSubmit);
-
     </script>
 </body>
 </html>

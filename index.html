@@ -6,11 +6,82 @@
     <title>CDI de L'ékip Teknik</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
             padding-top: 100px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        body.dark .floating-header,
+        body.dark .btn {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        body.dark .floating-header h1 {
+            color: #90cdf4;
+        }
+        body.dark .floating-header p {
+            color: #cbd5e0;
+        }
+        body.dark .btn:hover {
+            background-color: #4a5568;
+        }
+        body.dark #search-input {
+            background-color: #4a5568;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        body.dark #search-input::placeholder {
+            color: #a0aec0;
+        }
+        body.dark #suggestion-form {
+            background-color: #2d3748;
+        }
+        body.dark .modal-content,
+        body.dark .card {
+            background-color: #2d3748;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+        }
+        body.dark .card:hover {
+            box-shadow: 0 15px 20px -3px rgba(0, 0, 0, 0.3), 0 6px 8px -2px rgba(0, 0, 0, 0.2);
+        }
+        body.dark .card-separator {
+            background-color: #4a5568;
+        }
+        body.dark .card h3 {
+            color: #90cdf4;
+        }
+        body.dark .card p {
+            color: #cbd5e0;
+        }
+        body.dark .modal-form-group label {
+            color: #e2e8f0;
+        }
+        body.dark .modal-form-group input,
+        body.dark .modal-form-group textarea,
+        body.dark .modal-form-group select {
+            background-color: #4a5568;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        body.dark .modal-form-group input:focus,
+        body.dark .modal-form-group textarea:focus,
+        body.dark .modal-form-group select:focus {
+            border-color: #90cdf4;
+        }
+        body.dark .category-btn {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+        body.dark .category-btn:hover,
+        body.dark .active-button {
+            background-color: #63b3ed;
+            color: #1a202c;
         }
         .card {
             transition: transform 0.2s, box-shadow 0.2s;
@@ -32,7 +103,6 @@
             max-width: 90%;
             text-align: center;
         }
-
         .card-content-wrapper {
             display: flex;
             flex-direction: column;
@@ -43,7 +113,6 @@
             width: 100%;
             background-color: #e5e7eb;
         }
-
         @media (min-width: 768px) {
             .card-content-wrapper {
                 flex-direction: row;
@@ -60,9 +129,28 @@
                 text-align: right;
             }
         }
+        #dark-mode-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1001;
+            background-color: #4338ca;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: background-color 0.2s;
+        }
+        #dark-mode-toggle:hover {
+            background-color: #3730a3;
+        }
     </style>
 </head>
 <body class="text-gray-800">
+
+    <button id="dark-mode-toggle" aria-label="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+    </button>
 
     <header class="bg-indigo-700 text-white p-5 shadow-lg rounded-full floating-header transition-all duration-300 ease-in-out">
         <h1 class="text-2xl font-bold">CDI de L'ékip Teknik</h1>
@@ -99,79 +187,101 @@
                 </div>
                 <div class="mb-4">
                     <label for="suggestion-description" class="block text-gray-700 font-semibold mb-2">Description</label>
-                    <textarea id="suggestion-description" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" rows="3" required></textarea>
+                    <textarea id="suggestion-description" rows="4" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required></textarea>
                 </div>
                 <div class="mb-4">
-                    <label for="suggestion-url" class="block text-gray-700 font-semibold mb-2">URL</label>
+                    <label for="suggestion-url" class="block text-gray-700 font-semibold mb-2">Lien (URL)</label>
                     <input type="url" id="suggestion-url" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
                 </div>
                 <div class="mb-4">
                     <label for="suggestion-category" class="block text-gray-700 font-semibold mb-2">Catégorie</label>
                     <select id="suggestion-category" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500" required>
                         <option value="">Sélectionnez une catégorie</option>
-                        <option value="petitions">Pétition</option>
-                        <option value="comptes-utiles">Compte utile</option>
-                        <option value="sites-utiles">Site utile</option>
-                        <option value="ouvrages">Ouvrage</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-emerald-600 transition-colors">Envoyer la proposition</button>
+                <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors">Envoyer la proposition</button>
             </form>
         </div>
 
-        <div id="content-container" class="grid grid-cols-1 gap-6">
-            <div class="col-span-full text-center text-gray-500 text-xl mt-12">
-                <p>Sélectionnez une catégorie ci-dessus pour afficher les ressources.</p>
-            </div>
+        <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>
         </div>
-
+        
     </main>
-
+    <div id="modal-container" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div id="modal-content" class="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4"></h3>
+            <p id="modal-description" class="text-gray-700 mb-4"></p>
+            <p id="modal-characteristics" class="text-gray-600 mb-4"></p>
+            <a id="modal-url" href="#" target="_blank" class="block text-center bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">Visiter le site</a>
+            <button id="modal-close" class="mt-4 w-full text-gray-600 bg-gray-200 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">Fermer</button>
+        </div>
+    </div>
+    
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Firebase configuration (remplacez par votre propre configuration)
         const firebaseConfig = {
-            apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
-            authDomain: "cdi-lfi.firebaseapp.com",
-            projectId: "cdi-lfi",
-            storageBucket: "cdi-lfi.firebasestorage.app",
-            messagingSenderId: "626855610699",
-            appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
-            measurementId: "G-EMXFSRL9W0"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
+        // Initialisation de Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const analytics = getAnalytics(app); 
-        
-        const labelMap = {
-            platform: 'Plateforme',
-            struggle: 'Lutte',
-            network: 'Réseau',
-            type: 'Type',
-            publisher: 'Éditeur'
-        };
 
-        const contentContainer = document.getElementById('content-container');
+        // Variables globales
+        let categoryConfigData = {};
+        let activeCategory = 'petitions';
+        const cardsContainer = document.getElementById('cards-container');
         const controlsContainer = document.getElementById('controls-container');
-        const searchInput = document.getElementById('search-input');
-        const filtersContainer = document.getElementById('filters-container');
-        const categoryButtons = document.querySelectorAll('.btn');
-        const proposeButton = document.getElementById('btn-proposer');
         const suggestionFormContainer = document.getElementById('suggestion-form-container');
         const suggestionForm = document.getElementById('suggestion-form');
+        const suggestionCategorySelect = document.getElementById('suggestion-category');
         const messageArea = document.getElementById('message-area');
+        const searchInput = document.getElementById('search-input');
+        const filtersContainer = document.getElementById('filters-container');
+        const proposeButton = document.getElementById('btn-proposer');
+        const categoryButtons = document.querySelectorAll('.btn:not(#btn-proposer)');
 
-        let currentCategory = null;
+        // Gestion du mode sombre
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+        const icon = darkModeToggle.querySelector('i');
 
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isDarkMode = body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDarkMode);
+            if (isDarkMode) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // Appliquer le mode sombre au chargement
+        if (localStorage.getItem('darkMode') === 'true') {
+            body.classList.add('dark');
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+
+        // Fonction pour afficher des messages temporaires
         function showMessage(message, type) {
             messageArea.textContent = message;
             messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
             if (type === 'success') {
                 messageArea.classList.add('bg-green-100', 'text-green-800');
-            } else if (type === 'error') {
+            } else {
                 messageArea.classList.add('bg-red-100', 'text-red-800');
             }
             setTimeout(() => {
@@ -179,158 +289,163 @@
             }, 5000);
         }
 
-        function createCard(item, filterProperties) {
-            const card = document.createElement('a');
-            card.href = item.url;
-            card.target = "_blank";
-            card.className = "card block bg-white rounded-lg shadow-md p-6";
-
-            filterProperties.forEach(prop => {
-                if (item[prop]) {
-                    card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
-                }
-            });
-
-            const contentWrapper = document.createElement('div');
-            contentWrapper.className = "card-content-wrapper";
-
-            const mainContent = document.createElement('div');
-            mainContent.className = "flex-1 md:pr-4";
-            mainContent.innerHTML = `
-                <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
-                <p class="text-gray-600">${item.description}</p>
-            `;
-            contentWrapper.appendChild(mainContent);
-
-            const separator = document.createElement('div');
-            separator.className = "card-separator my-4 md:mx-4 md:my-0";
-            contentWrapper.appendChild(separator);
-
-            const characteristics = document.createElement('div');
-            characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none";
-            const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
-                <div>
-                    <span class="font-medium">${labelMap[prop] || prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
-                </div>
-            `).join('');
-            characteristics.innerHTML = characteristicsHtml;
-            contentWrapper.appendChild(characteristics);
-            
-            card.appendChild(contentWrapper);
-            
-            return card;
+        // Fonction pour afficher le formulaire de proposition
+        function showProposeForm() {
+            controlsContainer.classList.add('hidden');
+            cardsContainer.innerHTML = '';
+            suggestionFormContainer.classList.remove('hidden');
+            proposeButton.classList.add('active-button');
+            categoryButtons.forEach(btn => btn.classList.remove('active-button'));
         }
-
-        async function renderCategory(categoryKey) {
-            suggestionFormContainer.classList.add('hidden');
-            messageArea.classList.add('hidden');
-            contentContainer.innerHTML = '<div class="col-span-full text-center text-indigo-500 text-xl mt-12"><p>Chargement des ressources...</p></div>';
-            filtersContainer.innerHTML = '';
+        
+        // Fonction pour afficher une catégorie
+        function renderCategory(categoryKey) {
+            activeCategory = categoryKey;
             controlsContainer.classList.remove('hidden');
-            
-            searchInput.value = '';
-            currentCategory = categoryKey;
+            suggestionFormContainer.classList.add('hidden');
+            proposeButton.classList.remove('active-button');
+            cardsContainer.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>`;
+            filtersContainer.innerHTML = ''; // Réinitialiser les filtres
 
-            try {
-                const q = query(collection(db, 'resources'), where('category', '==', categoryKey));
-                const querySnapshot = await getDocs(q);
-
-                const items = querySnapshot.docs.map(doc => doc.data());
-
-                if (items.length === 0) {
-                    contentContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 text-xl mt-12"><p>Aucune ressource validée n\'a été trouvée pour cette catégorie.</p></div>';
-                    return;
-                }
-
-                contentContainer.innerHTML = '';
-
-                const filterProperties = Object.keys(items.length > 0 ? items[0] : {}).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
-            
-                filterProperties.forEach(prop => {
-                    const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
-                    
+            // Gérer les filtres
+            const categoryMeta = categoryConfigData[categoryKey];
+            if (categoryMeta && categoryMeta.filterProperties) {
+                categoryMeta.filterProperties.forEach(prop => {
                     const filterGroup = document.createElement('div');
-                    filterGroup.className = 'flex flex-col';
-                    
-                    const filterLabel = document.createElement('label');
-                    filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
-                    filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
-                    filterGroup.appendChild(filterLabel);
-                    
-                    const filterSelect = document.createElement('select');
-                    filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
-                    filterSelect.setAttribute('data-filter-property', prop);
-                    filterSelect.addEventListener('change', filterContent);
-
-                    const allOption = document.createElement('option');
-                    allOption.value = 'all';
-                    allOption.textContent = 'Tous';
-                    filterSelect.appendChild(allOption);
-
-                    uniqueFilters.forEach(filterValue => {
-                        const option = document.createElement('option');
-                        option.value = filterValue.toLowerCase();
-                        option.textContent = filterValue;
-                        filterSelect.appendChild(option);
-                    });
-
-                    filterGroup.appendChild(filterSelect);
+                    filterGroup.className = 'flex items-center gap-2';
+                    filterGroup.innerHTML = `
+                        <p class="font-bold text-sm">${prop.label}:</p>
+                        <select id="filter-${prop.key}" class="filter-select p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+                            <option value="">Tous</option>
+                        </select>
+                    `;
                     filtersContainer.appendChild(filterGroup);
-                });
 
-                items.forEach(item => {
-                    contentContainer.appendChild(createCard(item, filterProperties));
+                    const select = filterGroup.querySelector('select');
+                    prop.values.forEach(val => {
+                        const option = document.createElement('option');
+                        option.value = val;
+                        option.textContent = val;
+                        select.appendChild(option);
+                    });
+                    select.addEventListener('change', filterContent);
                 });
-            } catch (e) {
-                console.error("Error fetching documents: ", e);
-                contentContainer.innerHTML = '<div class="col-span-full text-center text-red-500 text-xl mt-12"><p>Une erreur est survenue lors du chargement des ressources.</p></div>';
+            }
+
+            // Écouter les données en temps réel
+            const q = query(collection(db, 'resources'), where('category', '==', categoryKey), where('status', '==', 'approved'));
+            onSnapshot(q, (querySnapshot) => {
+                const resources = [];
+                querySnapshot.forEach((doc) => {
+                    resources.push({ id: doc.id, ...doc.data() });
+                });
+                renderCards(resources);
+            }, (error) => {
+                console.error("Error fetching documents: ", error);
+                cardsContainer.innerHTML = `<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur de chargement des ressources.</p>`;
+            });
+        }
+        
+        // Fonction pour charger la configuration des catégories
+        async function loadCategoryConfig() {
+            const docRef = doc(db, 'appConfig', 'categoriesAndFilters');
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                categoryConfigData = docSnap.data();
+                // Remplir le select du formulaire de suggestion
+                suggestionCategorySelect.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+                for (const key in categoryConfigData) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = categoryConfigData[key].name;
+                    suggestionCategorySelect.appendChild(option);
+                }
+            } else {
+                console.log("No such document for category config!");
+            }
+
+            // Activer le bouton par défaut et afficher la première catégorie
+            if (categoryButtons.length > 0) {
+                categoryButtons[0].classList.add('active-button');
+                renderCategory(categoryButtons[0].id.replace('btn-', ''));
             }
         }
-
+        
+        // Fonction de filtrage et de recherche
         function filterContent() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const cards = contentContainer.querySelectorAll('.card');
-            const filterSelects = filtersContainer.querySelectorAll('select');
-            
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
-                
-                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
-                
-                let matchesFilters = true;
-                filterSelects.forEach(select => {
-                    const prop = select.getAttribute('data-filter-property');
-                    const filterValue = select.value;
+            const searchText = searchInput.value.toLowerCase();
+            const filterValues = Array.from(filtersContainer.querySelectorAll('.filter-select')).reduce((acc, select) => {
+                acc[select.id.replace('filter-', '')] = select.value;
+                return acc;
+            }, {});
 
-                    if (filterValue !== 'all') {
-                        const cardFilterValue = card.getAttribute(`data-${prop}`);
-                        if (!cardFilterValue || cardFilterValue !== filterValue) {
-                            matchesFilters = false;
-                        }
-                    }
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const title = card.dataset.title.toLowerCase();
+                const description = card.dataset.description.toLowerCase();
+                const filtersMatch = Object.keys(filterValues).every(key => {
+                    if (!filterValues[key]) return true;
+                    return card.dataset[key] === filterValues[key];
                 });
+                const searchMatch = title.includes(searchText) || description.includes(searchText);
                 
-                if (matchesSearch && matchesFilters) {
-                    card.style.display = 'block';
+                if (searchMatch && filtersMatch) {
+                    card.classList.remove('hidden');
                 } else {
-                    card.style.display = 'none';
+                    card.classList.add('hidden');
                 }
             });
         }
 
-        function showProposeForm() {
-            categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-            controlsContainer.classList.add('hidden');
-            contentContainer.classList.add('hidden');
-            messageArea.classList.add('hidden');
-            
-            suggestionFormContainer.classList.remove('hidden');
-            suggestionForm.reset();
+        // Fonction pour afficher les cartes
+        function renderCards(resources) {
+            cardsContainer.innerHTML = '';
+            if (resources.length === 0) {
+                cardsContainer.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune ressource pour cette catégorie.</p>`;
+                return;
+            }
+
+            resources.forEach(resource => {
+                const card = document.createElement('div');
+                card.className = 'card bg-white p-6 rounded-lg shadow-md';
+                card.dataset.title = resource.title;
+                card.dataset.description = resource.description;
+
+                let characteristicsHtml = '';
+                if (resource.characteristics) {
+                    for (const [key, value] of Object.entries(resource.characteristics)) {
+                        card.dataset[key] = value;
+                        const label = categoryConfigData[resource.category]?.filterProperties.find(prop => prop.key === key)?.label;
+                        if (label) {
+                            characteristicsHtml += `<p class="text-sm text-gray-600"><span class="font-bold">${label}:</span> ${value}</p>`;
+                        }
+                    }
+                }
+                
+                card.innerHTML = `
+                    <div class="card-content-wrapper">
+                        <div class="flex-1 card-main-content">
+                            <h3 class="text-xl font-bold text-indigo-700">${resource.title}</h3>
+                            <p class="text-gray-700 mt-2">${resource.description}</p>
+                        </div>
+                        <div class="card-separator"></div>
+                        <div class="flex-shrink-0 card-characteristics mt-4 md:mt-0">
+                            ${characteristicsHtml}
+                        </div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => showModal(resource));
+                cardsContainer.appendChild(card);
+            });
+
+            // Appliquer les filtres après le rendu initial
+            filterContent();
         }
 
-        async function handleSuggestionSubmit(event) {
-            event.preventDefault();
+        // Fonction pour gérer le formulaire de suggestion
+        async function handleSuggestionSubmit(e) {
+            e.preventDefault();
 
             const title = document.getElementById('suggestion-title').value;
             const description = document.getElementById('suggestion-description').value;
@@ -350,12 +465,15 @@
                 await addDoc(collection(db, 'pending'), newSuggestion);
                 showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
                 suggestionForm.reset();
+                // Revenir à l'affichage des cartes après l'envoi
+                document.getElementById(`btn-${activeCategory}`).click();
             } catch (e) {
                 console.error("Error adding document: ", e);
                 showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');
             }
         }
 
+        // Événements
         categoryButtons.forEach(button => {
             button.addEventListener('click', () => {
                 categoryButtons.forEach(btn => btn.classList.remove('active-button'));
@@ -369,6 +487,9 @@
         proposeButton.addEventListener('click', showProposeForm);
         searchInput.addEventListener('keyup', filterContent);
         suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+
+        // Appel initial pour charger la config
+        loadCategoryConfig();
     </script>
 </body>
 </html>

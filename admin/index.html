@@ -370,16 +370,48 @@
             </div>
             <div id="manage-config-section" class="hidden">
                 <h2 class="text-2xl font-bold text-center mb-6">Gérer les catégories et leurs filtres</h2>
-                <div class="flex justify-end mb-4">
-                    <button id="open-add-category-modal" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-full shadow hover:bg-indigo-700 transition">
-                        + Ajouter une catégorie
-                    </button>
-                </div>
                 <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                     <h3 class="text-xl font-bold mb-4">Catégories actuelles</h3>
                     <div id="categories-config-list" class="grid grid-cols-1 gap-4">
                         <p class="text-gray-500">Chargement de la configuration...</p>
                     </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
+                    <form id="add-category-form">
+                        <div class="modal-form-group">
+                            <label for="new-category-name-input">Nom de la Catégorie (ex: 'Livres')</label>
+                            <input type="text" id="new-category-name-input" class="w-full" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-label-input">Label de la Catégorie</label>
+                            <input type="text" id="new-category-label-input" class="w-full" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-description-input">Description de la Catégorie</label>
+                            <textarea id="new-category-description-input" class="w-full" rows="2"></textarea>
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-color-input">Couleur de la Catégorie</label>
+                            <input type="color" id="new-category-color-input" class="w-full">
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-order-input">Ordre d'affichage</label>
+                            <input type="number" id="new-category-order-input" class="w-full" min="0">
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-filter-properties">Propriétés de Filtre</label>
+                            <div id="new-category-filter-properties-container">
+                                <!-- Les champs de filtre seront ajoutés ici -->
+                            </div>
+                            <button type="button" id="add-new-filter-property-button" class="mt-2 text-indigo-600 font-semibold text-sm">
+                                + Ajouter une propriété de filtre
+                            </button>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition mt-4">
+                            Ajouter la Catégorie
+                        </button>
+                    </form>
                 </div>
             </div>
             <!-- Section pour changer le mot de passe -->
@@ -405,46 +437,7 @@
                 </form>
             </div>
         </main>
-
-    <!-- Modale d'ajout de catégorie -->
-    <div id="add-category-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-button" id="close-add-category-modal-button">&times;</button>
-            <h3 class="text-2xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
-            <form id="add-category-form">
-                <div class="modal-form-group">
-                    <label for="new-category-name-input">Nom technique (ex: ouvrages)</label>
-                    <input type="text" id="new-category-name-input" class="w-full" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="new-category-label-input">Label affiché</label>
-                    <input type="text" id="new-category-label-input" class="w-full" required>
-                </div>
-                <div class="modal-form-group">
-                    <label for="new-category-description-input">Description</label>
-                    <input type="text" id="new-category-description-input" class="w-full">
-                </div>
-                <div class="modal-form-group flex items-center gap-4">
-                    <label for="new-category-color-input">Couleur</label>
-                    <input type="color" id="new-category-color-input" value="#6366f1" class="w-16">
-                    <label for="new-category-order-input" class="ml-4">Ordre d'affichage</label>
-                    <input type="number" id="new-category-order-input" class="w-24" min="0">
-                </div>
-                <div class="modal-form-group">
-                    <label>Filtres de la catégorie</label>
-                    <div id="new-category-filter-properties-container"></div>
-                    <button type="button" id="add-new-filter-property-button" class="mt-2 text-indigo-600 font-semibold text-sm">
-                        + Ajouter un filtre
-                    </button>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" id="cancel-add-category-button" class="btn-cancel">Annuler</button>
-                    <button type="submit" class="btn-save">Ajouter la catégorie</button>
-                </div>
-            </form>
-        </div>
     </div>
-
     <!-- Modale d'édition de ressource -->
     <div id="resource-edit-modal" class="modal-overlay">
         <div class="modal-content">
@@ -1054,131 +1047,36 @@
         e.preventDefault();
         const categoryName = newCategoryNameInput.value.trim();
         const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
-        const label = newCategoryLabelInput.value.trim() || categoryName;
-        const description = newCategoryDescriptionInput.value.trim();
-        const color = newCategoryColorInput.value || '#6366f1';
-        const order = parseInt(newCategoryOrderInput.value) || 999;
         const filters = [];
         const filterItems = newCategoryFilterPropertiesContainer.querySelectorAll('.filter-property-item');
         filterItems.forEach(item => {
             const filterId = item.querySelector('.filter-id-input').value;
             const filterLabel = item.querySelector('.filter-label-input').value;
-            const filterPlaceholder = item.querySelector('.filter-placeholder-input').value;
-            const filterType = item.querySelector('.filter-type-input').value;
             if (filterId && filterLabel) {
                 filters.push({
                     id: filterId,
                     label: filterLabel,
-                    placeholder: filterPlaceholder,
-                    type: filterType
+                    placeholder: "",
+                    type: "text"
                 });
             }
         });
 
-        if (!categoryId || !label || filters.length === 0) {
-            showGeneralMessage("Le nom, le label et au moins un filtre sont requis.", 'error');
+        if (!categoryId || filters.length === 0) {
+            showGeneralMessage("Le nom de la catégorie et au moins un filtre sont requis.", 'error');
             return;
         }
 
         const updatedConfig = {
             ...categoryConfigData,
-            [categoryId]: {
-                label,
-                description,
-                color,
-                order,
-                filters
-            }
+            [categoryId]: filters
         };
-
+        
         try {
             await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
             showGeneralMessage('Catégorie ajoutée avec succès.', 'success');
-            addCategoryModal.classList.remove('show');
-        } catch (error) {
-            console.error("Error adding category: ", error);
-            showGeneralMessage('Erreur lors de l\'ajout de la catégorie.', 'error');
-        }
-    });
-
-    // --- MODALE AJOUT CATEGORIE ---
-    const addCategoryModal = document.getElementById('add-category-modal');
-    const openAddCategoryModalBtn = document.getElementById('open-add-category-modal');
-    const closeAddCategoryModalBtn = document.getElementById('close-add-category-modal-button');
-    const cancelAddCategoryBtn = document.getElementById('cancel-add-category-button');
-
-    openAddCategoryModalBtn.addEventListener('click', () => {
-        addCategoryModal.classList.add('show');
-        addCategoryForm.reset();
-        newCategoryFilterPropertiesContainer.innerHTML = '';
-    });
-    closeAddCategoryModalBtn.addEventListener('click', () => addCategoryModal.classList.remove('show'));
-    cancelAddCategoryBtn.addEventListener('click', () => addCategoryModal.classList.remove('show'));
-
-    // Fonction pour ajouter un champ de filtre (réutilisable)
-    function addFilterPropertyField(container, filterObj = {}) {
-        const newItem = document.createElement('div');
-        newItem.className = 'filter-property-item';
-        newItem.innerHTML = `
-            <input type="text" placeholder="ID du filtre" class="filter-id-input w-1/4" value="${filterObj.id || ''}" required>
-            <input type="text" placeholder="Label" class="filter-label-input w-1/4" value="${filterObj.label || ''}" required>
-            <input type="text" placeholder="Placeholder" class="filter-placeholder-input w-1/4" value="${filterObj.placeholder || ''}">
-            <select class="filter-type-input w-1/4">
-                <option value="text" ${filterObj.type === 'text' ? 'selected' : ''}>Texte</option>
-                <option value="select" ${filterObj.type === 'select' ? 'selected' : ''}>Liste</option>
-            </select>
-            <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">&times;</button>
-        `;
-        newItem.querySelector('button').addEventListener('click', () => newItem.remove());
-        container.appendChild(newItem);
-    }
-
-    // Soumission du formulaire d'ajout de catégorie
-    addCategoryForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const categoryName = newCategoryNameInput.value.trim();
-        const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
-        const label = newCategoryLabelInput.value.trim() || categoryName;
-        const description = newCategoryDescriptionInput.value.trim();
-        const color = newCategoryColorInput.value || '#6366f1';
-        const order = parseInt(newCategoryOrderInput.value) || 999;
-        const filters = [];
-        const filterItems = newCategoryFilterPropertiesContainer.querySelectorAll('.filter-property-item');
-        filterItems.forEach(item => {
-            const filterId = item.querySelector('.filter-id-input').value;
-            const filterLabel = item.querySelector('.filter-label-input').value;
-            const filterPlaceholder = item.querySelector('.filter-placeholder-input').value;
-            const filterType = item.querySelector('.filter-type-input').value;
-            if (filterId && filterLabel) {
-                filters.push({
-                    id: filterId,
-                    label: filterLabel,
-                    placeholder: filterPlaceholder,
-                    type: filterType
-                });
-            }
-        });
-
-        if (!categoryId || !label || filters.length === 0) {
-            showGeneralMessage("Le nom, le label et au moins un filtre sont requis.", 'error');
-            return;
-        }
-
-        const updatedConfig = {
-            ...categoryConfigData,
-            [categoryId]: {
-                label,
-                description,
-                color,
-                order,
-                filters
-            }
-        };
-
-        try {
-            await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
-            showGeneralMessage('Catégorie ajoutée avec succès.', 'success');
-            addCategoryModal.classList.remove('show');
+            addCategoryForm.reset();
+            newCategoryFilterPropertiesContainer.innerHTML = '';
         } catch (error) {
             console.error("Error adding category: ", error);
             showGeneralMessage('Erreur lors de l\'ajout de la catégorie.', 'error');

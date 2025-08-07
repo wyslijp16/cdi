@@ -6,87 +6,12 @@
     <title>CDI Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
             padding-top: 50px;
-            transition: background-color 0.3s, color 0.3s;
         }
-        body.dark {
-            background-color: #1a202c;
-            color: #e2e8f0;
-        }
-        body.dark .pending-card,
-        body.dark .resource-card,
-        body.dark .category-config-card,
-        body.dark .login-form-card,
-        body.dark #welcome-section,
-        body.dark .modal-content {
-            background-color: #2d3748;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
-        }
-        body.dark .pending-card h3,
-        body.dark .resource-card h3,
-        body.dark .category-config-card h3 {
-            color: #90cdf4;
-        }
-        body.dark .pending-card p,
-        body.dark .resource-card p,
-        body.dark .category-config-card p {
-            color: #cbd5e0;
-        }
-        body.dark .modal-form-group label {
-            color: #e2e8f0;
-        }
-        body.dark .modal-form-group input,
-        body.dark .modal-form-group textarea,
-        body.dark .modal-form-group select {
-            background-color: #4a5568;
-            border-color: #4a5568;
-            color: #e2e8f0;
-        }
-        body.dark .modal-form-group input:focus,
-        body.dark .modal-form-group textarea:focus,
-        body.dark .modal-form-group select:focus {
-            border-color: #90cdf4;
-        }
-        body.dark .modal-buttons .btn-cancel {
-            background-color: #4a5568;
-        }
-        body.dark .modal-buttons .btn-cancel:hover {
-            background-color: #636b76;
-        }
-        body.dark #unauthorized-message {
-            background-color: #372a2a;
-            color: #fca5a5;
-        }
-        body.dark .filter-property-item {
-            background-color: #4a5568;
-            border-color: #4a5568;
-        }
-        body.dark .login-form-card h2,
-        body.dark #welcome-section h2,
-        body.dark main h1,
-        body.dark #admin-panel-container h2 {
-            color: #90cdf4;
-        }
-        body.dark #welcome-section p {
-            color: #cbd5e0;
-        }
-        body.dark #sidebar-menu {
-            background-color: #2d3748;
-        }
-        body.dark .menu-button:hover {
-            background-color: #4a5568;
-        }
-        body.dark .menu-button.active-section-button {
-            background-color: #4a5568;
-        }
-        body.dark .menu-button {
-            color: #e2e8f0;
-        }
-
         /* Styles pour le bouton burger */
         #hamburger-button {
             position: fixed;
@@ -367,27 +292,10 @@
             max-width: 600px;
             margin: 2rem auto;
         }
-        #dark-mode-toggle {
-            position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            z-index: 1001;
-            background-color: #4338ca;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 9999px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: background-color 0.2s;
-        }
-        #dark-mode-toggle:hover {
-            background-color: #3730a3;
-        }
     </style>
 </head>
 <body class="text-gray-800">
-    <button id="dark-mode-toggle" aria-label="Toggle dark mode">
-        <i class="fas fa-moon"></i>
-    </button>
+    <!-- Conteneur de connexion -->
     <div id="login-container" class="login-container">
         <div class="login-form-card">
             <h2 class="text-2xl font-bold text-center mb-6 text-indigo-700">Connexion au Panel Admin</h2>
@@ -405,9 +313,11 @@
             </form>
         </div>
     </div>
+    <!-- Message d'accès refusé -->
     <div id="unauthorized-message" class="hidden">
         Accès refusé. Vos privilèges sont insuffisants pour accéder à cette page.
     </div>
+    <!-- Conteneur principal du panneau d'administration -->
     <div id="admin-panel-container" class="hidden">
         <button id="hamburger-button">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -426,14 +336,17 @@
                 <button id="menu-btn-show-config" class="menu-button">Gérer Catégories/Filtres</button>
             </div>
             <div class="mt-auto pt-4 border-t border-indigo-600">
-                 <button id="change-password-btn" class="menu-button">Changer le mot de passe</button>
-                <button id="logout-btn" class="menu-button bg-red-500 hover:bg-red-600 mt-2">Déconnexion</button>
+                 <button id="change-password-btn" class="menu-button">
+                    Changer le mot de passe
+                </button>
+                <button id="logout-btn" class="menu-button bg-red-500 hover:bg-red-600 mt-2">
+                    Déconnexion
+                </button>
             </div>
         </nav>
         <main class="container mx-auto p-4 md:p-8">
             <h1 class="text-3xl font-bold text-center mb-8 text-indigo-700">Panneau d'Administration CDI</h1>
             <div id="general-message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
-
             <div id="welcome-section" class="text-center bg-white p-8 rounded-lg shadow-md max-w-2xl mx-auto">
                 <h2 class="text-2xl font-bold text-indigo-700 mb-4">Bienvenue sur le Panneau d'Administration du CDI !</h2>
                 <p class="text-lg text-gray-700 mb-4">
@@ -443,355 +356,812 @@
                     Sélectionnez une option dans le menu latéral (cliquez sur l'icône <svg class="inline-block w-5 h-5 align-middle" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg> en haut à gauche) pour commencer. Vous pourrez valider ou refuser les **propositions en attente**, modifier ou supprimer les **ressources existantes**, et gérer les **catégories et leurs propriétés de filtre**.
                 </p>
             </div>
-
             <div id="pending-suggestions-section" class="hidden">
                 <h2 class="text-2xl font-bold text-center mb-6">Propositions en attente de validation</h2>
                 <div id="pending-suggestions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>
                 </div>
             </div>
-
             <div id="manage-resources-section" class="hidden">
                 <h2 class="text-2xl font-bold text-center mb-6">Gérer les ressources existantes</h2>
                 <div id="resources-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>
                 </div>
             </div>
-
-            <div id="category-config-section" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">Gérer les catégories et filtres</h2>
-                    <button id="add-category-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition-colors">Ajouter une catégorie</button>
+            <div id="manage-config-section" class="hidden">
+                <h2 class="text-2xl font-bold text-center mb-6">Gérer les catégories et leurs filtres</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h3 class="text-xl font-bold mb-4">Catégories actuelles</h3>
+                    <div id="categories-config-list" class="grid grid-cols-1 gap-4">
+                        <p class="text-gray-500">Chargement de la configuration...</p>
+                    </div>
                 </div>
-                <div id="category-config-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement de la configuration...</p>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
+                    <form id="add-category-form">
+                        <div class="modal-form-group">
+                            <label for="new-category-name-input">Nom de la Catégorie (ex: 'Livres')</label>
+                            <input type="text" id="new-category-name-input" class="w-full" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-filter-properties">Propriétés de Filtre</label>
+                            <div id="new-category-filter-properties-container">
+                                <!-- Les champs de filtre seront ajoutés ici -->
+                            </div>
+                            <button type="button" id="add-new-filter-property-button" class="mt-2 text-indigo-600 font-semibold text-sm">
+                                + Ajouter une propriété de filtre
+                            </button>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition mt-4">
+                            Ajouter la Catégorie
+                        </button>
+                    </form>
                 </div>
             </div>
-
-            <div id="password-change-section" class="hidden">
-                <h2 class="text-2xl font-bold text-center mb-6">Changer le mot de passe</h2>
-                <form id="password-change-form" class="bg-white p-8 rounded-lg shadow-md max-w-xl mx-auto">
+            <!-- Section pour changer le mot de passe -->
+            <div id="change-password-section" class="hidden bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
+                <h2 class="text-2xl font-bold text-indigo-700 mb-6 text-center">Changer le mot de passe</h2>
+                <form id="change-password-form">
                     <div class="modal-form-group">
-                        <label for="current-password">Mot de passe actuel</label>
-                        <input type="password" id="current-password" required>
+                        <label for="current-password-input">Mot de passe actuel</label>
+                        <input type="password" id="current-password-input" required>
                     </div>
                     <div class="modal-form-group">
-                        <label for="new-password">Nouveau mot de passe</label>
-                        <input type="password" id="new-password" required>
+                        <label for="new-password-input">Nouveau mot de passe</label>
+                        <input type="password" id="new-password-input" required>
                     </div>
                     <div class="modal-form-group">
-                        <label for="confirm-password">Confirmer le nouveau mot de passe</label>
-                        <input type="password" id="confirm-password" required>
+                        <label for="confirm-new-password-input">Confirmer le nouveau mot de passe</label>
+                        <input type="password" id="confirm-new-password-input" required>
                     </div>
-                    <div id="password-change-message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
-                    <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition">Changer le mot de passe</button>
+                    <div id="password-message-area" class="text-center p-3 rounded-lg mb-4 hidden"></div>
+                    <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition">
+                        Changer le mot de passe
+                    </button>
                 </form>
             </div>
         </main>
     </div>
-
-    <!-- Modal pour éditer/ajouter une ressource -->
-    <div id="edit-resource-modal-overlay" class="modal-overlay">
+    <!-- Modale d'édition de ressource -->
+    <div id="resource-edit-modal" class="modal-overlay">
         <div class="modal-content">
-            <button class="modal-close-button">&times;</button>
-            <h2 id="edit-modal-title" class="text-2xl font-bold mb-4"></h2>
-            <form id="edit-resource-form">
+            <button class="modal-close-button" id="close-resource-modal-button">&times;</button>
+            <h3 class="text-2xl font-bold mb-4">Éditer la ressource</h3>
+            <form id="resource-edit-form">
+                <input type="hidden" id="edit-resource-id">
                 <div class="modal-form-group">
-                    <label for="edit-title">Titre</label>
-                    <input type="text" id="edit-title" required>
+                    <label for="edit-resource-title">Titre</label>
+                    <input type="text" id="edit-resource-title" required>
                 </div>
                 <div class="modal-form-group">
-                    <label for="edit-description">Description</label>
-                    <textarea id="edit-description" rows="4" required></textarea>
+                    <label for="edit-resource-description">Description</label>
+                    <textarea id="edit-resource-description" rows="4"></textarea>
                 </div>
                 <div class="modal-form-group">
-                    <label for="edit-url">Lien (URL)</label>
-                    <input type="url" id="edit-url" required>
+                    <label for="edit-resource-link">Lien</label>
+                    <input type="url" id="edit-resource-link">
                 </div>
                 <div class="modal-form-group">
-                    <label for="edit-category">Catégorie</label>
-                    <select id="edit-category" required></select>
+                    <label for="edit-resource-category">Catégorie</label>
+                    <select id="edit-resource-category" required></select>
                 </div>
-                <div id="edit-filters-container"></div>
+                <!-- Champs de filtre générés dynamiquement -->
+                <div id="edit-resource-filter-fields"></div>
                 <div class="modal-buttons">
-                    <button type="button" id="delete-resource-btn" class="btn-delete-resource">Supprimer</button>
-                    <button type="submit" class="btn-save">Sauvegarder</button>
-                    <button type="button" class="btn-cancel">Annuler</button>
+                    <button type="button" id="delete-resource-button" class="btn-delete-resource">Supprimer</button>
+                    <button type="button" id="cancel-resource-edit-button" class="btn-cancel">Annuler</button>
+                    <button type="submit" class="btn-save">Enregistrer les modifications</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Modal pour éditer/ajouter une catégorie -->
-    <div id="edit-category-modal-overlay" class="modal-overlay">
+    <!-- Modale d'édition de catégorie -->
+    <div id="edit-category-modal" class="modal-overlay">
         <div class="modal-content">
-            <button class="modal-close-button">&times;</button>
-            <h2 id="edit-category-modal-title" class="text-2xl font-bold mb-4"></h2>
+            <button class="modal-close-button" id="close-category-modal-button">&times;</button>
+            <h3 class="text-2xl font-bold mb-4">Éditer les filtres de la catégorie <span id="edit-category-name"></span></h3>
             <form id="edit-category-form">
+                <input type="hidden" id="edit-category-key-input">
                 <div class="modal-form-group">
-                    <label for="edit-category-name">Nom de la catégorie</label>
-                    <input type="text" id="edit-category-name" required>
+                    <label>Filtres</label>
+                    <div id="edit-category-filter-properties-list">
+                        <!-- Champs de filtre existants -->
+                    </div>
+                    <button type="button" id="add-edit-filter-property-button" class="mt-2 text-indigo-600 font-semibold text-sm">
+                        + Ajouter une propriété de filtre
+                    </button>
                 </div>
-                <div class="modal-form-group">
-                    <label for="edit-category-key">Clé unique (ID)</label>
-                    <input type="text" id="edit-category-key" required>
-                </div>
-                <h3 class="font-bold text-lg mb-2 mt-4">Propriétés de filtre</h3>
-                <div id="filter-properties-list"></div>
-                <button type="button" id="add-filter-property-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-full mt-2 transition-colors">Ajouter une propriété</button>
                 <div class="modal-buttons">
-                    <button type="submit" class="btn-save">Sauvegarder</button>
-                    <button type="button" class="btn-cancel">Annuler</button>
+                    <button type="button" id="delete-category-button" class="btn-delete-resource">Supprimer la catégorie</button>
+                    <button type="button" id="cancel-category-edit-button" class="btn-cancel">Annuler</button>
+                    <button type="submit" class="btn-save">Enregistrer les modifications</button>
                 </div>
             </form>
         </div>
     </div>
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, query, where, onSnapshot, getDocs, setDoc, updateDoc, deleteDoc, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, updatePassword, onAuthStateChanged, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, onSnapshot, updateDoc, deleteDoc, setDoc, query, collection, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase configuration (remplacez par votre propre configuration)
+        // Variables globales pour l'application
+        let userRole = null;
+        let auth = null;
+        let db = null;
+        let categoryConfigData = {};
+        const MAX_RETRIES = 5;
+        const RETRY_DELAY_MS = 1000;
+
+        // ATTENTION : REMPLACEZ CET OBJET firebaseConfig PAR CELUI DE VOTRE PROJET FIREBASE.
+        // VOUS POUVEZ LE TROUVER DANS LA CONSOLE FIREBASE -> Paramètres du projet -> Vos applications.
         const firebaseConfig = {
-          apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
-          authDomain: "cdi-lfi.firebaseapp.com",
-          projectId: "cdi-lfi",
-          storageBucket: "cdi-lfi.firebasestorage.app",
-          messagingSenderId: "626855610699",
-          appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
-          measurementId: "G-EMXFSRL9W0"
+        apiKey: "AIzaSyAKoEX-Sdn1KQ78wYZCAz001vKiRBoT46w",
+        authDomain: "cdi-lfi.firebaseapp.com",
+        projectId: "cdi-lfi",
+        storageBucket: "cdi-lfi.firebasestorage.app",
+        messagingSenderId: "626855610699",
+        appId: "1:626855610699:web:3c46a96f9d77d3e150c0ce",
+        measurementId: "G-EMXFSRL9W0"
         };
-        
+
         // Initialisation de Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Eléments de l'interface
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // Références DOM
         const loginContainer = document.getElementById('login-container');
+        const adminPanelContainer = document.getElementById('admin-panel-container');
+        const unauthorizedMessage = document.getElementById('unauthorized-message');
         const loginForm = document.getElementById('login-form');
         const loginMessageArea = document.getElementById('login-message-area');
-        const unauthorizedMessage = document.getElementById('unauthorized-message');
-        const adminPanelContainer = document.getElementById('admin-panel-container');
-        const welcomeSection = document.getElementById('welcome-section');
-        const pendingSuggestionsSection = document.getElementById('pending-suggestions-section');
-        const manageResourcesSection = document.getElementById('manage-resources-section');
-        const categoryConfigSection = document.getElementById('category-config-section');
-        const passwordChangeSection = document.getElementById('password-change-section');
-        const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
-        const resourcesList = document.getElementById('resources-list');
-        const categoryConfigList = document.getElementById('category-config-list');
-        const generalMessageArea = document.getElementById('general-message-area');
+        const logoutBtn = document.getElementById('logout-btn');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+        const changePasswordSection = document.getElementById('change-password-section');
+        const changePasswordForm = document.getElementById('change-password-form');
+        const passwordMessageArea = document.getElementById('password-message-area');
         const hamburgerButton = document.getElementById('hamburger-button');
         const sidebarMenu = document.getElementById('sidebar-menu');
-        const menuButtons = document.querySelectorAll('#sidebar-menu .menu-button');
-        const superuserMenuItems = document.getElementById('superuser-menu-items');
         const userRoleMenu = document.getElementById('user-role-menu');
         const userEmailMenu = document.getElementById('user-email-menu');
+        const superuserMenuItems = document.getElementById('superuser-menu-items');
+        const generalMessageArea = document.getElementById('general-message-area');
 
-        // Modals et formulaires d'édition
-        const editResourceModalOverlay = document.getElementById('edit-resource-modal-overlay');
-        const editResourceForm = document.getElementById('edit-resource-form');
-        const editModalTitle = document.getElementById('edit-modal-title');
-        const editTitleInput = document.getElementById('edit-title');
-        const editDescriptionInput = document.getElementById('edit-description');
-        const editUrlInput = document.getElementById('edit-url');
-        const editCategorySelect = document.getElementById('edit-category');
-        const editFiltersContainer = document.getElementById('edit-filters-container');
-        const deleteResourceBtn = document.getElementById('delete-resource-btn');
-        let currentEditingResourceId = null;
-        let currentEditingResourceData = null;
+        // Références pour les sections
+        const sections = {
+            'welcome': document.getElementById('welcome-section'),
+            'pending': document.getElementById('pending-suggestions-section'),
+            'manage': document.getElementById('manage-resources-section'),
+            'config': document.getElementById('manage-config-section'),
+            'password': document.getElementById('change-password-section')
+        };
+        const menuButtons = {
+            'welcome': document.getElementById('menu-btn-show-welcome'),
+            'pending': document.getElementById('menu-btn-show-pending'),
+            'manage': document.getElementById('menu-btn-show-manage'),
+            'config': document.getElementById('menu-btn-show-config'),
+        };
 
-        const editCategoryModalOverlay = document.getElementById('edit-category-modal-overlay');
+        // Modales
+        const resourceEditModal = document.getElementById('resource-edit-modal');
+        const resourceEditForm = document.getElementById('resource-edit-form');
+        const editResourceId = document.getElementById('edit-resource-id');
+        const editResourceTitle = document.getElementById('edit-resource-title');
+        const editResourceDescription = document.getElementById('edit-resource-description');
+        const editResourceLink = document.getElementById('edit-resource-link');
+        const editResourceCategory = document.getElementById('edit-resource-category');
+        const editResourceFilterFields = document.getElementById('edit-resource-filter-fields');
+        const deleteResourceButton = document.getElementById('delete-resource-button');
+
+        const editCategoryModal = document.getElementById('edit-category-modal');
         const editCategoryForm = document.getElementById('edit-category-form');
-        const editCategoryModalTitle = document.getElementById('edit-category-modal-title');
-        const editCategoryNameInput = document.getElementById('edit-category-name');
-        const editCategoryKeyInput = document.getElementById('edit-category-key');
-        const addFilterPropertyBtn = document.getElementById('add-filter-property-btn');
-        const filterPropertiesList = document.getElementById('filter-properties-list');
-        let currentEditingCategoryKey = null;
+        const editCategoryName = document.getElementById('edit-category-name');
+        const editCategoryKeyInput = document.getElementById('edit-category-key-input');
+        const editCategoryFilterPropertiesList = document.getElementById('edit-category-filter-properties-list');
+        const addEditFilterPropertyButton = document.getElementById('add-edit-filter-property-button');
+        const deleteCategoryButton = document.getElementById('delete-category-button');
 
-        // Formulaire de changement de mot de passe
-        const passwordChangeForm = document.getElementById('password-change-form');
-        const currentPasswordInput = document.getElementById('current-password');
-        const newPasswordInput = document.getElementById('new-password');
-        const confirmPasswordInput = document.getElementById('confirm-password');
-        const passwordChangeMessageArea = document.getElementById('password-change-message-area');
+        const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
+        const resourcesList = document.getElementById('resources-list');
+        const categoriesConfigList = document.getElementById('categories-config-list');
+        const addCategoryForm = document.getElementById('add-category-form');
+        const newCategoryNameInput = document.getElementById('new-category-name-input');
+        const newCategoryFilterPropertiesContainer = document.getElementById('new-category-filter-properties-container');
+        const addNewFilterPropertyButton = document.getElementById('add-new-filter-property-button');
 
-        // Variables globales
-        let userRole = 'viewer';
-        let categoryConfigData = {};
-        let allResources = [];
-        let allPendingSuggestions = [];
-
-        // Gestion du mode sombre
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        const body = document.body;
-        const icon = darkModeToggle.querySelector('i');
-
-        darkModeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark');
-            const isDarkMode = body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDarkMode);
-            if (isDarkMode) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
-
-        // Appliquer le mode sombre au chargement
-        if (localStorage.getItem('darkMode') === 'true') {
-            body.classList.add('dark');
-            icon.classList.remove('fa-moon');
-            icon.classList.add('fa-sun');
-        }
-
-        // Fonction pour afficher des messages temporaires dans la zone générale
+        // Fonction d'affichage des messages généraux
         function showGeneralMessage(message, type) {
             generalMessageArea.textContent = message;
-            generalMessageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+            generalMessageArea.className = `text-center p-3 rounded-lg mb-4 text-white font-bold`;
             if (type === 'success') {
-                generalMessageArea.classList.add('bg-green-100', 'text-green-800');
+                generalMessageArea.classList.add('bg-green-500');
             } else if (type === 'error') {
-                generalMessageArea.classList.add('bg-red-100', 'text-red-800');
-            } else if (type === 'warning') {
-                generalMessageArea.classList.add('bg-yellow-100', 'text-yellow-800');
+                generalMessageArea.classList.add('bg-red-500');
             }
+            generalMessageArea.classList.remove('hidden');
             setTimeout(() => {
                 generalMessageArea.classList.add('hidden');
             }, 5000);
         }
 
-        // Fonction pour afficher une section
-        function showSection(sectionId) {
-            const sections = {
-                welcome: welcomeSection,
-                pending: pendingSuggestionsSection,
-                manage: manageResourcesSection,
-                config: categoryConfigSection,
-                password: passwordChangeSection,
-            };
-
+        // Fonction pour afficher une section et cacher les autres
+        function showSection(sectionName) {
             Object.values(sections).forEach(section => section.classList.add('hidden'));
-            if (sections[sectionId]) {
-                sections[sectionId].classList.remove('hidden');
+            if (sections[sectionName]) {
+                sections[sectionName].classList.remove('hidden');
+            }
+            Object.values(menuButtons).forEach(btn => btn.classList.remove('active-section-button'));
+            if (menuButtons[sectionName]) {
+                menuButtons[sectionName].classList.add('active-section-button');
             }
 
-            // Mettre à jour le bouton de menu actif
-            menuButtons.forEach(btn => btn.classList.remove('active-section-button'));
-            const activeBtn = document.getElementById(`menu-btn-show-${sectionId}`);
-            if (activeBtn) {
-                activeBtn.classList.add('active-section-button');
-            }
-            
-            // Re-render la section si nécessaire
-            if (sectionId === 'pending') {
-                renderPendingSuggestions(allPendingSuggestions);
-            } else if (sectionId === 'manage') {
-                renderResources(allResources);
-            } else if (sectionId === 'config') {
+            if (sectionName === 'pending') {
+                loadPendingSuggestions();
+            } else if (sectionName === 'manage') {
+                loadExistingResources();
+            } else if (sectionName === 'config') {
                 renderCategoryConfig();
             }
         }
-        
-        // ... (Le reste du code reste le même, seules les sections de style et de gestion du mode sombre ont été ajoutées)
 
-        // Initialisation de l'application
+        // Fonction pour afficher le contenu du panneau d'administration après l'authentification
+        function showAdminPanel(user) {
+            loginContainer.classList.add('hidden');
+            unauthorizedMessage.classList.add('hidden');
+            adminPanelContainer.classList.remove('hidden');
+
+            // Mise à jour de l'UI avec les infos de l'utilisateur
+            userEmailMenu.textContent = user.email;
+
+            // Masquer les éléments superuser par défaut
+            superuserMenuItems.classList.add('hidden');
+
+            // Récupération du rôle de l'utilisateur
+            const userDocRef = doc(db, 'users', user.uid);
+            onSnapshot(userDocRef, (docSnap) => {
+                if (docSnap.exists() && docSnap.data().role === 'superuser') {
+                    userRole = 'superuser';
+                    userRoleMenu.textContent = 'Superuser';
+                    superuserMenuItems.classList.remove('hidden');
+                } else {
+                    userRole = 'user';
+                    userRoleMenu.textContent = 'Admin';
+                }
+                // Charger la section de bienvenue par défaut une fois le rôle connu
+                showSection('welcome');
+            }, (error) => {
+                console.error("Error getting user role: ", error);
+                userRole = 'user';
+                userRoleMenu.textContent = 'Admin';
+                showSection('welcome');
+            });
+        }
+
+        // Fonction pour afficher la page de connexion
+        function showLoginPage() {
+            loginContainer.classList.remove('hidden');
+            adminPanelContainer.classList.add('hidden');
+            unauthorizedMessage.classList.add('hidden');
+            userRole = null;
+        }
+
+        // Fonction pour afficher un message d'erreur d'accès
+        function showUnauthorizedPage() {
+            loginContainer.classList.add('hidden');
+            adminPanelContainer.classList.add('hidden');
+            unauthorizedMessage.classList.remove('hidden');
+            userRole = null;
+        }
+
+        // Gérer l'authentification au chargement
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                const userDocRef = doc(db, 'users', user.uid);
                 try {
-                    const docRef = doc(db, "users", user.uid);
-                    const docSnap = await getDoc(docRef);
-
-                    if (docSnap.exists() && docSnap.data().role) {
-                        userRole = docSnap.data().role;
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists() && (userDocSnap.data().role === 'superuser' || userDocSnap.data().role === 'admin')) {
+                        showAdminPanel(user);
                     } else {
-                        userRole = 'viewer';
+                        showUnauthorizedPage();
                     }
-
-                    loginContainer.classList.add('hidden');
-                    unauthorizedMessage.classList.add('hidden');
-                    adminPanelContainer.classList.remove('hidden');
-                    
-                    // Remplir les infos utilisateur dans le menu
-                    userRoleMenu.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
-                    userEmailMenu.textContent = user.email;
-
-                    if (userRole === 'superuser') {
-                        superuserMenuItems.classList.remove('hidden');
-                    } else {
-                        superuserMenuItems.classList.add('hidden');
-                    }
-
-                    // Charger les données de la base
-                    await loadCategoryConfig();
-                    listenToPendingSuggestions();
-                    listenToResources();
-
-                    // Afficher la section d'accueil
-                    showSection('welcome');
-                } catch (e) {
-                    console.error("Error fetching user data: ", e);
-                    // Si une erreur se produit, déconnecter l'utilisateur
-                    await signOut(auth);
+                } catch (error) {
+                    console.error("Error checking user role: ", error);
+                    showUnauthorizedPage();
                 }
             } else {
-                // Utilisateur déconnecté
-                loginContainer.classList.remove('hidden');
-                unauthorizedMessage.classList.add('hidden');
-                adminPanelContainer.classList.add('hidden');
-                // Réinitialiser le rôle
-                userRole = 'viewer';
+                showLoginPage();
             }
         });
 
-        // Event Listeners for sections
-        document.getElementById('menu-btn-show-welcome').addEventListener('click', () => showSection('welcome'));
-        document.getElementById('menu-btn-show-pending').addEventListener('click', () => showSection('pending'));
-        document.getElementById('menu-btn-show-manage').addEventListener('click', () => showSection('manage'));
-        document.getElementById('menu-btn-show-config').addEventListener('click', () => showSection('config'));
-        document.getElementById('change-password-btn').addEventListener('click', () => showSection('password'));
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            await signOut(auth);
-        });
-
-        // Hamburger menu toggle
-        hamburgerButton.addEventListener('click', () => {
-            sidebarMenu.classList.toggle('open');
-        });
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', (e) => {
-            if (!sidebarMenu.contains(e.target) && !hamburgerButton.contains(e.target) && sidebarMenu.classList.contains('open')) {
-                sidebarMenu.classList.remove('open');
-            }
-        });
-
-        // Other event listeners and functions (login, password change, modals, etc.) would go here
-        
-        // Login form submission
+        // Gérer la connexion
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = loginForm['login-email'].value;
             const password = loginForm['login-password'].value;
             try {
-                await signInWithEmailAndPassword(auth, email, password);
-                loginMessageArea.classList.add('hidden');
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists() && (userDocSnap.data().role === 'superuser' || userDocSnap.data().role === 'admin')) {
+                    showGeneralMessage('Connexion réussie!', 'success');
+                } else {
+                    await signOut(auth); // Déconnecte l'utilisateur non autorisé
+                    showUnauthorizedPage();
+                }
             } catch (error) {
-                const errorMessage = error.message;
-                loginMessageArea.textContent = "Erreur de connexion : email ou mot de passe incorrect.";
+                console.error("Login error:", error);
+                loginMessageArea.textContent = `Erreur de connexion : ${error.message}`;
                 loginMessageArea.classList.remove('hidden');
-                loginMessageArea.classList.add('bg-red-100', 'text-red-800');
-                console.error("Login error:", errorMessage);
+                loginMessageArea.classList.remove('bg-green-500');
+                loginMessageArea.classList.add('bg-red-500', 'text-white');
             }
         });
 
-        // Fonctions de rendu et de gestion des données (fonctions non modifiées, à intégrer)
-        // ... listenToPendingSuggestions(), listenToResources(), renderPendingSuggestions(), renderResources(), etc. ...
+        // Gérer la déconnexion
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showGeneralMessage('Déconnexion réussie!', 'success');
+            } catch (error) {
+                showGeneralMessage('Erreur de déconnexion.', 'error');
+                console.error("Logout error: ", error);
+            }
+        });
+
+        // Gérer le changement de mot de passe
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentPassword = changePasswordForm['current-password-input'].value;
+            const newPassword = changePasswordForm['new-password-input'].value;
+            const confirmNewPassword = changePasswordForm['confirm-new-password-input'].value;
+
+            if (newPassword !== confirmNewPassword) {
+                passwordMessageArea.textContent = "Les nouveaux mots de passe ne correspondent pas.";
+                passwordMessageArea.classList.add('bg-red-500', 'text-white');
+                passwordMessageArea.classList.remove('hidden');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                passwordMessageArea.textContent = "Le nouveau mot de passe doit contenir au moins 6 caractères.";
+                passwordMessageArea.classList.add('bg-red-500', 'text-white');
+                passwordMessageArea.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                await reauthenticateWithCredential(user, credential);
+                await updatePassword(user, newPassword);
+                showGeneralMessage('Mot de passe changé avec succès!', 'success');
+                showSection('welcome'); // Retour à la page d'accueil
+                passwordMessageArea.classList.add('hidden');
+                changePasswordForm.reset();
+            } catch (error) {
+                console.error("Erreur de changement de mot de passe: ", error);
+                passwordMessageArea.textContent = `Erreur de changement de mot de passe: ${error.message}`;
+                passwordMessageArea.classList.add('bg-red-500', 'text-white');
+                passwordMessageArea.classList.remove('hidden');
+            }
+        });
+
+        // Toggle du menu latéral
+        hamburgerButton.addEventListener('click', () => {
+            sidebarMenu.classList.toggle('open');
+        });
+
+        // Cacher le menu latéral au clic sur un bouton
+        document.querySelectorAll('.menu-button').forEach(button => {
+            button.addEventListener('click', () => {
+                sidebarMenu.classList.remove('open');
+            });
+        });
+
+        // --- Fonctions de gestion des ressources et propositions ---
+
+        // Créer un élément de carte pour une ressource/proposition
+        function createCardElement(data, isPending) {
+            const card = document.createElement('div');
+            card.className = `${isPending ? 'pending-card' : 'resource-card'} relative group`;
+            card.innerHTML = `
+                <div class="card-message-area"></div>
+                <h3 class="font-bold text-lg text-indigo-700">${data.title}</h3>
+                <p class="text-sm text-gray-600">${data.description}</p>
+                ${data.link ? `<p class="text-xs text-indigo-500 truncate"><a href="${data.link}" target="_blank">${data.link}</a></p>` : ''}
+                <p class="text-xs text-gray-400">Catégorie: ${data.category}</p>
+                <div class="actions mt-4">
+                    ${isPending ? `<button class="btn-validate bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Valider</button>` : ''}
+                    ${isPending ? `<button class="btn-reject bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Rejeter</button>` : ''}
+                    ${!isPending ? `<button class="btn-edit bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Éditer</button>` : ''}
+                    ${!isPending ? `<button class="btn-delete bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Supprimer</button>` : ''}
+                </div>
+            `;
+            if (isPending) {
+                card.querySelector('.btn-validate').addEventListener('click', () => handleValidation(card, data.id, true));
+                card.querySelector('.btn-reject').addEventListener('click', () => handleValidation(card, data.id, false));
+            } else {
+                card.querySelector('.btn-edit').addEventListener('click', () => handleEditResource(data));
+                card.querySelector('.btn-delete').addEventListener('click', () => deleteResource(data.id, card));
+            }
+            return card;
+        }
+
+        // Fonction pour gérer la validation/rejet d'une proposition
+        async function handleValidation(cardElement, docId, isAccepted) {
+            const messageArea = cardElement.querySelector('.card-message-area');
+            cardElement.classList.add('fade-out');
+
+            try {
+                // Supprimer la proposition de la collection "pending"
+                const docRef = doc(db, 'pending', docId);
+                await deleteDoc(docRef);
+
+                if (isAccepted) {
+                    // Si acceptée, ajouter à la collection "resources"
+                    const resourceRef = collection(db, 'resources');
+                    const pendingDocSnap = await getDoc(doc(db, 'pending', docId));
+                    if (pendingDocSnap.exists()) {
+                        await addDoc(resourceRef, pendingDocSnap.data());
+                    }
+                    messageArea.textContent = 'Validé!';
+                    messageArea.classList.add('success', 'show');
+                } else {
+                    messageArea.textContent = 'Rejeté!';
+                    messageArea.classList.add('error', 'show');
+                }
+                
+                // Attendre l'animation de fade-out puis supprimer l'élément
+                setTimeout(() => {
+                    if (cardElement.parentNode) {
+                        cardElement.parentNode.removeChild(cardElement);
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error("Erreur lors de la validation/rejet: ", error);
+                messageArea.textContent = 'Erreur!';
+                messageArea.classList.add('error', 'show');
+                cardElement.classList.remove('fade-out');
+                setTimeout(() => messageArea.classList.remove('show'), 3000);
+            }
+        }
+
+        // Fonction pour charger et afficher les propositions en attente
+        function loadPendingSuggestions() {
+            pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des propositions...</p>`;
+            const pendingRef = collection(db, 'pending');
+            onSnapshot(pendingRef, (querySnapshot) => {
+                pendingSuggestionsList.innerHTML = '';
+                const pendingCount = querySnapshot.docs.length;
+                if (pendingCount === 0) {
+                    pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune proposition en attente pour le moment.</p>`;
+                    return;
+                }
+                querySnapshot.forEach((doc) => {
+                    const data = { id: doc.id, ...doc.data() };
+                    const card = createCardElement(data, true);
+                    pendingSuggestionsList.appendChild(card);
+                });
+            }, (error) => {
+                console.error("Error loading pending suggestions: ", error);
+                pendingSuggestionsList.innerHTML = `<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des propositions.</p>`;
+            });
+        }
+        
+        // Fonction pour charger et afficher les ressources existantes
+        function loadExistingResources() {
+            resourcesList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Chargement des ressources...</p>`;
+            const resourcesRef = collection(db, 'resources');
+            onSnapshot(resourcesRef, (querySnapshot) => {
+                resourcesList.innerHTML = '';
+                const resourceCount = querySnapshot.docs.length;
+                if (resourceCount === 0) {
+                    resourcesList.innerHTML = `<p class="col-span-full text-center text-gray-500 text-xl mt-12">Aucune ressource existante.</p>`;
+                    return;
+                }
+                querySnapshot.forEach((doc) => {
+                    const data = { id: doc.id, ...doc.data() };
+                    const card = createCardElement(data, false);
+                    resourcesList.appendChild(card);
+                });
+            }, (error) => {
+                console.error("Error loading existing resources: ", error);
+                resourcesList.innerHTML = `<p class="col-span-full text-center text-red-500 text-xl mt-12">Erreur lors du chargement des ressources.</p>`;
+            });
+        }
+
+        // Fonction pour générer dynamiquement les champs de filtre d'une ressource
+        function renderResourceFilterFields(resourceData, targetElement) {
+            targetElement.innerHTML = ''; // Nettoyer les anciens champs
+            if (resourceData.category && categoryConfigData[resourceData.category]) {
+                const filters = categoryConfigData[resourceData.category].filters;
+                if (filters) {
+                    for (const filterId in filters) {
+                        const filterLabel = filters[filterId];
+                        const fieldValue = resourceData.filters ? (resourceData.filters[filterId] || '') : '';
+                        const filterGroup = document.createElement('div');
+                        filterGroup.className = 'modal-form-group';
+                        filterGroup.innerHTML = `
+                            <label for="edit-resource-${filterId}">${filterLabel}</label>
+                            <input type="text" id="edit-resource-${filterId}" data-filter-id="${filterId}" value="${fieldValue}">
+                        `;
+                        targetElement.appendChild(filterGroup);
+                    }
+                }
+            }
+        }
+        
+        // Gérer le clic sur le bouton "Éditer" d'une ressource
+        function handleEditResource(resourceData) {
+            editResourceId.value = resourceData.id;
+            editResourceTitle.value = resourceData.title;
+            editResourceDescription.value = resourceData.description;
+            editResourceLink.value = resourceData.link;
+            
+            // Remplir le select des catégories
+            editResourceCategory.innerHTML = '';
+            for (const key in categoryConfigData) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = categoryConfigData[key].label;
+                editResourceCategory.appendChild(option);
+            }
+            editResourceCategory.value = resourceData.category;
+
+            // Rendre les champs de filtre
+            renderResourceFilterFields(resourceData, editResourceFilterFields);
+
+            // Gérer le changement de catégorie pour mettre à jour les filtres
+            editResourceCategory.onchange = () => {
+                const newCategory = editResourceCategory.value;
+                const newResourceData = { ...resourceData, category: newCategory };
+                renderResourceFilterFields(newResourceData, editResourceFilterFields);
+            };
+
+            resourceEditModal.classList.add('show');
+        }
+
+        // Gérer la soumission du formulaire d'édition de ressource
+        resourceEditForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resourceId = editResourceId.value;
+            const updatedResource = {
+                title: editResourceTitle.value,
+                description: editResourceDescription.value,
+                link: editResourceLink.value,
+                category: editResourceCategory.value,
+                filters: {}
+            };
+
+            // Collecter les valeurs des filtres dynamiques
+            editResourceFilterFields.querySelectorAll('input').forEach(input => {
+                const filterId = input.dataset.filterId;
+                if (filterId) {
+                    updatedResource.filters[filterId] = input.value;
+                }
+            });
+
+            try {
+                const resourceDocRef = doc(db, 'resources', resourceId);
+                await updateDoc(resourceDocRef, updatedResource);
+                showGeneralMessage('Ressource mise à jour avec succès.', 'success');
+                resourceEditModal.classList.remove('show');
+            } catch (error) {
+                console.error("Error updating resource: ", error);
+                showGeneralMessage('Erreur lors de la mise à jour de la ressource.', 'error');
+            }
+        });
+
+        // Gérer la suppression d'une ressource
+        deleteResourceButton.addEventListener('click', async () => {
+            const resourceId = editResourceId.value;
+            if (confirm("Êtes-vous sûr de vouloir supprimer cette ressource ?")) {
+                try {
+                    const resourceDocRef = doc(db, 'resources', resourceId);
+                    await deleteDoc(resourceDocRef);
+                    showGeneralMessage('Ressource supprimée avec succès.', 'success');
+                    resourceEditModal.classList.remove('show');
+                } catch (error) {
+                    console.error("Error deleting resource: ", error);
+                    showGeneralMessage('Erreur lors de la suppression de la ressource.', 'error');
+                }
+            }
+        });
+
+        // Fermer la modale d'édition de ressource
+        document.getElementById('close-resource-modal-button').addEventListener('click', () => resourceEditModal.classList.remove('show'));
+        document.getElementById('cancel-resource-edit-button').addEventListener('click', () => resourceEditModal.classList.remove('show'));
+
+        // --- Fonctions de gestion des catégories et filtres ---
+
+        // Fonction pour créer un élément de carte pour une catégorie
+        function createCategoryConfigCard(key, data) {
+            const card = document.createElement('div');
+            card.className = 'category-config-card';
+            card.innerHTML = `
+                <h3 class="font-bold text-lg text-indigo-700">${data.label}</h3>
+                <p class="text-sm text-gray-600">ID: ${key}</p>
+                <div class="actions mt-4">
+                    <button class="btn-edit-category bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Gérer les filtres</button>
+                </div>
+            `;
+            card.querySelector('.btn-edit-category').addEventListener('click', () => handleEditCategory(key, data));
+            return card;
+        }
+
+        // Fonction pour charger et afficher la configuration des catégories
+        function renderCategoryConfig() {
+            categoriesConfigList.innerHTML = `<p class="text-gray-500">Chargement de la configuration...</p>`;
+            if (Object.keys(categoryConfigData).length === 0) {
+                categoriesConfigList.innerHTML = `<p class="text-gray-500">Aucune catégorie configurée.</p>`;
+                return;
+            }
+            categoriesConfigList.innerHTML = '';
+            for (const key in categoryConfigData) {
+                const card = createCategoryConfigCard(key, categoryConfigData[key]);
+                categoriesConfigList.appendChild(card);
+            }
+        }
+        
+        // Fonction pour ajouter un champ de propriété de filtre
+        function addFilterPropertyField(container) {
+            const newItem = document.createElement('div');
+            newItem.className = 'filter-property-item';
+            newItem.innerHTML = `
+                <input type="text" placeholder="ID du filtre (ex: 'auteur')" class="filter-id-input w-1/2" required>
+                <input type="text" placeholder="Label du filtre (ex: 'Auteur')" class="filter-label-input w-1/2" required>
+                <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
+                    &times;
+                </button>
+            `;
+            newItem.querySelector('button').addEventListener('click', () => newItem.remove());
+            container.appendChild(newItem);
+        }
+
+        // Gérer le clic sur le bouton "Ajouter une propriété de filtre" pour la création de catégorie
+        addNewFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(newCategoryFilterPropertiesContainer));
+
+        // Gérer la soumission du formulaire d'ajout de catégorie
+        addCategoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const categoryName = newCategoryNameInput.value.trim();
+            const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
+            const filters = {};
+            const filterItems = newCategoryFilterPropertiesContainer.querySelectorAll('.filter-property-item');
+            filterItems.forEach(item => {
+                const filterId = item.querySelector('.filter-id-input').value;
+                const filterLabel = item.querySelector('.filter-label-input').value;
+                if (filterId && filterLabel) {
+                    filters[filterId] = filterLabel;
+                }
+            });
+
+            if (!categoryId || Object.keys(filters).length === 0) {
+                showGeneralMessage("Le nom de la catégorie et au moins un filtre sont requis.", 'error');
+                return;
+            }
+
+            const updatedConfig = {
+                ...categoryConfigData,
+                [categoryId]: {
+                    label: categoryName,
+                    filters: filters
+                }
+            };
+            
+            try {
+                await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+                showGeneralMessage('Catégorie ajoutée avec succès.', 'success');
+                addCategoryForm.reset();
+                newCategoryFilterPropertiesContainer.innerHTML = '';
+            } catch (error) {
+                console.error("Error adding category: ", error);
+                showGeneralMessage('Erreur lors de l\'ajout de la catégorie.', 'error');
+            }
+        });
+
+        // Gérer l'édition d'une catégorie
+        function handleEditCategory(key, data) {
+            editCategoryName.textContent = data.label;
+            editCategoryKeyInput.value = key;
+            editCategoryFilterPropertiesList.innerHTML = '';
+            if (data.filters) {
+                for (const filterId in data.filters) {
+                    const filterLabel = data.filters[filterId];
+                    const newItem = document.createElement('div');
+                    newItem.className = 'filter-property-item';
+                    newItem.innerHTML = `
+                        <input type="text" value="${filterId}" class="filter-id-input w-1/2" required>
+                        <input type="text" value="${filterLabel}" class="filter-label-input w-1/2" required>
+                        <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
+                            &times;
+                        </button>
+                    `;
+                    newItem.querySelector('button').addEventListener('click', () => newItem.remove());
+                    editCategoryFilterPropertiesList.appendChild(newItem);
+                }
+            }
+            editCategoryModal.classList.add('show');
+        }
+        
+        // Gérer la soumission du formulaire d'édition de catégorie
+        editCategoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = editCategoryKeyInput.value;
+            const filters = {};
+            const filterItems = editCategoryFilterPropertiesList.querySelectorAll('.filter-property-item');
+            filterItems.forEach(item => {
+                const filterId = item.querySelector('.filter-id-input').value;
+                const filterLabel = item.querySelector('.filter-label-input').value;
+                if (filterId && filterLabel) {
+                    filters[filterId] = filterLabel;
+                }
+            });
+
+            const updatedConfig = { ...categoryConfigData, [id]: { ...categoryConfigData[id], filters: filters } };
+
+            try {
+                await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+                editCategoryModal.classList.remove('show');
+                showGeneralMessage('Filtres de la catégorie mis à jour avec succès.', 'success');
+            } catch (error) {
+                console.error("Error updating category filters: ", error);
+                showGeneralMessage('Erreur lors de la mise à jour des filtres.', 'error');
+            }
+        });
+        
+        // Gérer la suppression de catégorie
+        deleteCategoryButton.addEventListener('click', async () => {
+            const id = editCategoryKeyInput.value;
+            if (confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${categoryConfigData[id].label}" ?`)) {
+                const updatedConfig = { ...categoryConfigData };
+                delete updatedConfig[id];
+
+                try {
+                    await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+                    editCategoryModal.classList.remove('show');
+                    showGeneralMessage('Catégorie supprimée avec succès.', 'success');
+                } catch (error) {
+                    console.error("Erreur lors de la suppression de la catégorie: ", error);
+                    showGeneralMessage('Erreur lors de la suppression de la catégorie.', 'error');
+                }
+            }
+        });
+
+        // Fermer la modale d'édition de catégorie
+        document.getElementById('close-category-modal-button').addEventListener('click', () => editCategoryModal.classList.remove('show'));
+        document.getElementById('cancel-category-edit-button').addEventListener('click', () => editCategoryModal.classList.remove('show'));
+        addEditFilterPropertyButton.addEventListener('click', () => addFilterPropertyField(editCategoryFilterPropertiesList));
+
+        // Listeners pour les boutons du menu
+        document.getElementById('menu-btn-show-welcome').addEventListener('click', () => showSection('welcome'));
+        document.getElementById('menu-btn-show-pending').addEventListener('click', () => showSection('pending'));
+        document.getElementById('menu-btn-show-manage').addEventListener('click', () => showSection('manage'));
+        document.getElementById('menu-btn-show-config').addEventListener('click', () => showSection('config'));
+        document.getElementById('change-password-btn').addEventListener('click', () => showSection('password'));
+
+        // Chargement de la configuration des catégories au démarrage de l'application
+        function loadCategoryConfig() {
+            onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
+                if (docSnap.exists()) {
+                    categoryConfigData = docSnap.data();
+                } else {
+                    categoryConfigData = {};
+                }
+                // Si la section de configuration est affichée, la mettre à jour
+                if (!sections['config'].classList.contains('hidden')) {
+                    renderCategoryConfig();
+                }
+            }, (error) => {
+                console.error("Error initializing category config: ", error);
+                categoryConfigData = {};
+            });
+        }
+        
+        // Chargement initial de la configuration
+        loadCategoryConfig();
     </script>
 </body>
 </html>

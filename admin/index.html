@@ -378,40 +378,12 @@
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h3 class="text-xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
-                    <form id="add-category-form">
-                        <div class="modal-form-group">
-                            <label for="new-category-name-input">Nom de la Catégorie (ex: 'Livres')</label>
-                            <input type="text" id="new-category-name-input" class="w-full" required>
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-label-input">Label de la Catégorie</label>
-                            <input type="text" id="new-category-label-input" class="w-full" required>
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-description-input">Description de la Catégorie</label>
-                            <textarea id="new-category-description-input" class="w-full" rows="2"></textarea>
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-color-input">Couleur de la Catégorie</label>
-                            <input type="color" id="new-category-color-input" class="w-full">
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-order-input">Ordre d'affichage</label>
-                            <input type="number" id="new-category-order-input" class="w-full" min="0">
-                        </div>
-                        <div class="modal-form-group">
-                            <label for="new-category-filter-properties">Propriétés de Filtre</label>
-                            <div id="new-category-filter-properties-container">
-                                <!-- Les champs de filtre seront ajoutés ici -->
-                            </div>
-                            <button type="button" id="add-new-filter-property-button" class="mt-2 text-indigo-600 font-semibold text-sm">
-                                + Ajouter une propriété de filtre
-                            </button>
-                        </div>
-                        <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition mt-4">
-                            Ajouter la Catégorie
-                        </button>
-                    </form>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-4">Ajouter une nouvelle catégorie</h3>
+                    <button id="open-add-category-modal" class="py-2 px-4 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 transition">
+                        + Nouvelle catégorie
+                    </button>
+                    </div>
                 </div>
             </div>
             <!-- Section pour changer le mot de passe -->
@@ -494,6 +466,48 @@
                 </div>
             </form>
         </div>
+    </div>
+    <!-- Modale de création/édition de catégorie -->
+    <div id="category-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-button" id="close-category-modal-btn">&times;</button>
+        <h3 class="text-2xl font-bold mb-4" id="category-modal-title">Ajouter une catégorie</h3>
+        <form id="category-modal-form">
+        <input type="hidden" id="category-modal-id">
+        <div class="modal-form-group">
+            <label for="category-modal-name">Nom de la Catégorie (ex: 'livres')</label>
+            <input type="text" id="category-modal-name" required>
+        </div>
+        <div class="modal-form-group">
+            <label for="category-modal-label">Label de la Catégorie</label>
+            <input type="text" id="category-modal-label" required>
+        </div>
+        <div class="modal-form-group">
+            <label for="category-modal-description">Description</label>
+            <textarea id="category-modal-description" rows="2"></textarea>
+        </div>
+        <div class="modal-form-group">
+            <label for="category-modal-color">Couleur</label>
+            <input type="color" id="category-modal-color">
+        </div>
+        <div class="modal-form-group">
+            <label for="category-modal-order">Ordre d'affichage</label>
+            <input type="number" id="category-modal-order" min="0">
+        </div>
+        <div class="modal-form-group">
+            <label>Propriétés de Filtre</label>
+            <div id="category-modal-filters"></div>
+            <button type="button" id="category-modal-add-filter" class="mt-2 text-indigo-600 font-semibold text-sm">
+            + Ajouter une propriété de filtre
+            </button>
+        </div>
+        <div class="modal-buttons">
+            <button type="button" id="category-modal-delete-btn" class="btn-delete-resource hidden">Supprimer</button>
+            <button type="button" id="category-modal-cancel-btn" class="btn-cancel">Annuler</button>
+            <button type="submit" class="btn-save">Enregistrer</button>
+        </div>
+        </form>
+    </div>
     </div>
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -580,7 +594,6 @@
     const pendingSuggestionsList = document.getElementById('pending-suggestions-list');
     const resourcesList = document.getElementById('resources-list');
     const categoriesConfigList = document.getElementById('categories-config-list');
-    const addCategoryForm = document.getElementById('add-category-form');
     const newCategoryNameInput = document.getElementById('new-category-name-input');
     const newCategoryLabelInput = document.getElementById('new-category-label-input');
     const newCategoryDescriptionInput = document.getElementById('new-category-description-input');
@@ -1176,6 +1189,146 @@
     document.getElementById('menu-btn-show-config').addEventListener('click', () => showSection('config'));
     document.getElementById('change-password-btn').addEventListener('click', () => showSection('password'));
 
+// --- MODALE CATÉGORIE (création/édition) ---
+
+// Références modale catégorie
+const categoryModal = document.getElementById('category-modal');
+const categoryModalTitle = document.getElementById('category-modal-title');
+const categoryModalForm = document.getElementById('category-modal-form');
+const categoryModalId = document.getElementById('category-modal-id');
+const categoryModalName = document.getElementById('category-modal-name');
+const categoryModalLabel = document.getElementById('category-modal-label');
+const categoryModalDescription = document.getElementById('category-modal-description');
+const categoryModalColor = document.getElementById('category-modal-color');
+const categoryModalOrder = document.getElementById('category-modal-order');
+const categoryModalFilters = document.getElementById('category-modal-filters');
+const categoryModalAddFilter = document.getElementById('category-modal-add-filter');
+const categoryModalDeleteBtn = document.getElementById('category-modal-delete-btn');
+const categoryModalCancelBtn = document.getElementById('category-modal-cancel-btn');
+const openAddCategoryModalBtn = document.getElementById('open-add-category-modal');
+const closeCategoryModalBtn = document.getElementById('close-category-modal-btn');
+
+// Ouvre la modale en mode création
+openAddCategoryModalBtn.addEventListener('click', () => {
+  openCategoryModal();
+});
+
+// Ferme la modale
+closeCategoryModalBtn.addEventListener('click', () => categoryModal.classList.remove('show'));
+categoryModalCancelBtn.addEventListener('click', () => categoryModal.classList.remove('show'));
+
+// Fermer la modale en cliquant sur le fond
+categoryModal.addEventListener('click', (e) => {
+  if (e.target === categoryModal) categoryModal.classList.remove('show');
+});
+
+// Ajoute un champ de filtre
+categoryModalAddFilter.addEventListener('click', () => addFilterPropertyField(categoryModalFilters));
+
+// Fonction pour ajouter un champ de filtre (réutilisable)
+function addFilterPropertyField(container, filterObj = {}) {
+  const newItem = document.createElement('div');
+  newItem.className = 'filter-property-item';
+  newItem.innerHTML = `
+    <input type="text" placeholder="ID du filtre (ex: auteur)" class="filter-id-input w-1/2" value="${filterObj.id || ''}" required>
+    <input type="text" placeholder="Label du filtre (ex: Auteur)" class="filter-label-input w-1/2" value="${filterObj.label || ''}" required>
+    <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">&times;</button>
+  `;
+  newItem.querySelector('button').addEventListener('click', () => newItem.remove());
+  container.appendChild(newItem);
+}
+
+// Ouvre la modale (création ou édition)
+function openCategoryModal(categoryKey = null, categoryData = null) {
+  categoryModalForm.reset();
+  categoryModalFilters.innerHTML = '';
+  categoryModalId.value = categoryKey || '';
+  categoryModalDeleteBtn.classList.toggle('hidden', !categoryKey);
+
+  if (categoryKey && categoryData) {
+    // Mode édition
+    categoryModalTitle.textContent = `Éditer la catégorie "${categoryKey}"`;
+    categoryModalName.value = categoryKey;
+    categoryModalLabel.value = categoryData.label || '';
+    categoryModalDescription.value = categoryData.description || '';
+    categoryModalColor.value = categoryData.color || '#000000';
+    categoryModalOrder.value = categoryData.order || '';
+    if (Array.isArray(categoryData.filters)) {
+      categoryData.filters.forEach(f => addFilterPropertyField(categoryModalFilters, f));
+    }
+  } else {
+    // Mode création
+    categoryModalTitle.textContent = "Ajouter une catégorie";
+    categoryModalName.value = '';
+    categoryModalLabel.value = '';
+    categoryModalDescription.value = '';
+    categoryModalColor.value = '#000000';
+    categoryModalOrder.value = '';
+    addFilterPropertyField(categoryModalFilters); // au moins un champ
+  }
+  categoryModal.classList.add('show');
+}
+
+// Gère la soumission du formulaire (création ou édition)
+categoryModalForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const key = categoryModalName.value.trim().toLowerCase().replace(/\s+/g, '-');
+  const label = categoryModalLabel.value.trim();
+  const description = categoryModalDescription.value.trim();
+  const color = categoryModalColor.value;
+  const order = categoryModalOrder.value;
+  const filters = [];
+  categoryModalFilters.querySelectorAll('.filter-property-item').forEach(item => {
+    const id = item.querySelector('.filter-id-input').value.trim();
+    const lbl = item.querySelector('.filter-label-input').value.trim();
+    if (id && lbl) filters.push({ id, label: lbl, placeholder: "", type: "text" });
+  });
+  if (!key || !label || filters.length === 0) {
+    showGeneralMessage("Tous les champs et au moins un filtre sont requis.", 'error');
+    return;
+  }
+  const updatedConfig = { ...categoryConfigData, [key]: { label, description, color, order, filters } };
+  try {
+    await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+    showGeneralMessage(categoryModalId.value ? 'Catégorie modifiée.' : 'Catégorie ajoutée.', 'success');
+    categoryModal.classList.remove('show');
+  } catch (error) {
+    showGeneralMessage('Erreur lors de l\'enregistrement.', 'error');
+  }
+});
+
+// Gère la suppression
+categoryModalDeleteBtn.addEventListener('click', async () => {
+  const key = categoryModalId.value;
+  if (confirm(`Supprimer la catégorie "${key}" ?`)) {
+    const updatedConfig = { ...categoryConfigData };
+    delete updatedConfig[key];
+    try {
+      await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
+      showGeneralMessage('Catégorie supprimée.', 'success');
+      categoryModal.classList.remove('show');
+    } catch (error) {
+      showGeneralMessage('Erreur lors de la suppression.', 'error');
+    }
+  }
+});
+
+// --- Ouvre la modale en mode édition depuis la liste ---
+function createCategoryConfigCard(key, data) {
+  const label = data.label || key;
+  const card = document.createElement('div');
+  card.className = 'category-config-card';
+  card.innerHTML = `
+    <h3 class="font-bold text-lg text-indigo-700">${label}</h3>
+    <p class="text-sm text-gray-600">ID: ${key}</p>
+    <div class="actions mt-4">
+      <button class="btn-edit-category bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Gérer la catégorie</button>
+    </div>
+  `;
+  card.querySelector('.btn-edit-category').addEventListener('click', () => openCategoryModal(key, data));
+  return card;
+}
+
     // Chargement de la configuration des catégories au démarrage de l'application
     function loadCategoryConfig() {
         onSnapshot(doc(db, 'appConfig', 'categoriesAndFilters'), (docSnap) => {
@@ -1196,6 +1349,6 @@
 
     // Chargement initial de la configuration
     loadCategoryConfig();
-    </script>
+    </script> 
 </body>
 </html>

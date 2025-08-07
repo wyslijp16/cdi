@@ -232,7 +232,7 @@
             currentCategory = categoryKey;
 
             try {
-                const q = query(collection(db, 'suggestions'), where('category', '==', categoryKey), where('status', '==', 'validated'));
+                const q = query(collection(db, 'resources'), where('category', '==', categoryKey));
                 const querySnapshot = await getDocs(q);
 
                 const items = querySnapshot.docs.map(doc => doc.data());
@@ -347,7 +347,7 @@
             };
 
             try {
-                await addDoc(collection(db, 'suggestions'), newSuggestion);
+                await addDoc(collection(db, 'pending'), newSuggestion);
                 showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
                 suggestionForm.reset();
             } catch (e) {

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CDI de L'ékip Teknik</title>
+    <!-- Le CDN de Tailwind est utilisé ici pour la simplicité dans cet environnement.
+         En production, il est recommandé de l'installer en tant que plugin PostCSS. -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
     <style>
@@ -134,265 +136,269 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        const labelMap = {
-            platform: 'Plateforme',
-            struggle: 'Lutte',
-            network: 'Réseau',
-            type: 'Type',
-            publisher: 'Éditeur'
-        };
-
-        const contentContainer = document.getElementById('content-container');
-        const controlsContainer = document.getElementById('controls-container');
-        const searchInput = document.getElementById('search-input');
-        const filtersContainer = document.getElementById('filters-container');
-        const categoryButtons = document.querySelectorAll('.btn');
-        const proposeButton = document.getElementById('btn-proposer');
-        const suggestionFormContainer = document.getElementById('suggestion-form-container');
-        const suggestionForm = document.getElementById('suggestion-form');
-        const messageArea = document.getElementById('message-area');
-
-        let currentCategory = null;
-
-        function showMessage(message, type) {
-            messageArea.textContent = message;
-            messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-            if (type === 'success') {
-                messageArea.classList.add('bg-green-100', 'text-green-800');
-            } else if (type === 'error') {
-                messageArea.classList.add('bg-red-100', 'text-red-800');
-            }
-            setTimeout(() => {
-                messageArea.classList.add('hidden');
-            }, 5000);
-        }
-
-        function createCard(item, filterProperties) {
-            const card = document.createElement('a');
-            card.href = item.url;
-            card.target = "_blank";
-            card.className = "card block bg-white rounded-lg shadow-md p-6";
-
-            filterProperties.forEach(prop => {
-                if (item[prop]) {
-                    card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
-                }
-            });
-
-            const contentWrapper = document.createElement('div');
-            contentWrapper.className = "card-content-wrapper";
-
-            const mainContent = document.createElement('div');
-            mainContent.className = "flex-1 md:pr-4";
-            mainContent.innerHTML = `
-                <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
-                <p class="text-gray-600">${item.description}</p>
-            `;
-            contentWrapper.appendChild(mainContent);
-
-            const separator = document.createElement('div');
-            separator.className = "card-separator my-4 md:mx-4 md:my-0";
-            contentWrapper.appendChild(separator);
-
-            const characteristics = document.createElement('div');
-            characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none";
-            const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
-                <div>
-                    <span class="font-medium">${labelMap[prop] || prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
-                </div>
-            `).join('');
-            characteristics.innerHTML = characteristicsHtml;
-            contentWrapper.appendChild(characteristics);
+        // Check if firebaseConfig is valid before initializing the app
+        if (!firebaseConfig.projectId) {
+            console.error("Firebase config is missing projectId. Please make sure the __firebase_config variable is correctly set.");
+        } else {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
             
-            card.appendChild(contentWrapper);
-            
-            return card;
-        }
-
-        async function renderCategory(categoryKey) {
-            suggestionFormContainer.classList.add('hidden');
-            messageArea.classList.add('hidden');
-            contentContainer.innerHTML = '';
-            filtersContainer.innerHTML = '';
-            controlsContainer.classList.remove('hidden');
-            contentContainer.classList.remove('hidden');
-            currentCategory = categoryKey;
-            
-            searchInput.value = '';
-
-            contentContainer.innerHTML = `
-                <div class="col-span-full text-center text-gray-500 text-xl mt-12">
-                    <p>Chargement des ressources...</p>
-                </div>
-            `;
-
-            try {
-                const q = collection(db, `/artifacts/${appId}/public/data/${categoryKey}`);
-                const querySnapshot = await getDocs(q);
-                
-                const items = [];
-                querySnapshot.forEach(doc => {
-                    items.push(doc.data());
-                });
-
-                contentContainer.innerHTML = '';
-
-                if (items.length === 0) {
-                     contentContainer.innerHTML = `
-                        <div class="col-span-full text-center text-gray-500 text-xl mt-12">
-                            <p>Aucune ressource trouvée pour cette catégorie.</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                const filterProperties = Object.keys(items[0]).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
-                
-                filterProperties.forEach(prop => {
-                    const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
-                    
-                    const filterGroup = document.createElement('div');
-                    filterGroup.className = 'flex flex-col';
-                    
-                    const filterLabel = document.createElement('label');
-                    filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
-                    filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
-                    filterGroup.appendChild(filterLabel);
-                    
-                    const filterSelect = document.createElement('select');
-                    filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
-                    filterSelect.setAttribute('data-filter-property', prop);
-                    filterSelect.addEventListener('change', filterContent);
-
-                    const allOption = document.createElement('option');
-                    allOption.value = 'all';
-                    allOption.textContent = 'Tous';
-                    filterSelect.appendChild(allOption);
-
-                    uniqueFilters.forEach(filterValue => {
-                        const option = document.createElement('option');
-                        option.value = filterValue.toLowerCase();
-                        option.textContent = filterValue;
-                        filterSelect.appendChild(option);
-                    });
-
-                    filterGroup.appendChild(filterSelect);
-                    filtersContainer.appendChild(filterGroup);
-                });
-
-                items.forEach(item => {
-                    contentContainer.appendChild(createCard(item, filterProperties));
-                });
-            } catch (e) {
-                console.error("Erreur lors du chargement des ressources : ", e);
-                contentContainer.innerHTML = `
-                    <div class="col-span-full text-center text-red-500 text-xl mt-12">
-                        <p>Une erreur est survenue lors du chargement des données.</p>
-                    </div>
-                `;
-            }
-        }
-
-        function filterContent() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const cards = contentContainer.querySelectorAll('.card');
-            const filterSelects = filtersContainer.querySelectorAll('select');
-            
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
-                
-                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
-                
-                let matchesFilters = true;
-                filterSelects.forEach(select => {
-                    const prop = select.getAttribute('data-filter-property');
-                    const filterValue = select.value;
-
-                    if (filterValue !== 'all') {
-                        const cardFilterValue = card.getAttribute(`data-${prop}`);
-                        if (!cardFilterValue || cardFilterValue !== filterValue) {
-                            matchesFilters = false;
-                        }
-                    }
-                });
-                
-                if (matchesSearch && matchesFilters) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-        function showProposeForm() {
-            categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-            controlsContainer.classList.add('hidden');
-            contentContainer.classList.add('hidden');
-            messageArea.classList.add('hidden');
-            
-            suggestionFormContainer.classList.remove('hidden');
-            suggestionForm.reset();
-        }
-
-        async function handleSuggestionSubmit(event) {
-            event.preventDefault();
-
-            const title = document.getElementById('suggestion-title').value;
-            const description = document.getElementById('suggestion-description').value;
-            const url = document.getElementById('suggestion-url').value;
-            const category = document.getElementById('suggestion-category').value;
-
-            const newSuggestion = {
-                title,
-                description,
-                url,
-                category,
-                createdAt: serverTimestamp(),
-                status: 'pending'
+            const labelMap = {
+                platform: 'Plateforme',
+                struggle: 'Lutte',
+                network: 'Réseau',
+                type: 'Type',
+                publisher: 'Éditeur'
             };
 
-            try {
-                const suggestionsCollection = collection(db, `/artifacts/${appId}/public/data/suggestions`);
-                await addDoc(suggestionsCollection, newSuggestion);
-                showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
-                suggestionForm.reset();
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');
-            }
-        }
+            const contentContainer = document.getElementById('content-container');
+            const controlsContainer = document.getElementById('controls-container');
+            const searchInput = document.getElementById('search-input');
+            const filtersContainer = document.getElementById('filters-container');
+            const categoryButtons = document.querySelectorAll('.btn');
+            const proposeButton = document.getElementById('btn-proposer');
+            const suggestionFormContainer = document.getElementById('suggestion-form-container');
+            const suggestionForm = document.getElementById('suggestion-form');
+            const messageArea = document.getElementById('message-area');
 
-        categoryButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                categoryButtons.forEach(btn => btn.classList.remove('active-button'));
-                button.classList.add('active-button');
-                
-                const categoryKey = button.id.replace('btn-', '');
-                renderCategory(categoryKey);
-            });
-        });
+            let currentCategory = null;
 
-        proposeButton.addEventListener('click', showProposeForm);
-        searchInput.addEventListener('keyup', filterContent);
-        suggestionForm.addEventListener('submit', handleSuggestionSubmit);
-
-        window.onload = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+            function showMessage(message, type) {
+                messageArea.textContent = message;
+                messageArea.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+                if (type === 'success') {
+                    messageArea.classList.add('bg-green-100', 'text-green-800');
+                } else if (type === 'error') {
+                    messageArea.classList.add('bg-red-100', 'text-red-800');
                 }
-            } catch (error) {
-                console.error("Erreur d'authentification :", error);
+                setTimeout(() => {
+                    messageArea.classList.add('hidden');
+                }, 5000);
             }
-        };
 
+            function createCard(item, filterProperties) {
+                const card = document.createElement('a');
+                card.href = item.url;
+                card.target = "_blank";
+                card.className = "card block bg-white rounded-lg shadow-md p-6";
+
+                filterProperties.forEach(prop => {
+                    if (item[prop]) {
+                        card.setAttribute(`data-${prop}`, item[prop].toLowerCase());
+                    }
+                });
+
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = "card-content-wrapper";
+
+                const mainContent = document.createElement('div');
+                mainContent.className = "flex-1 md:pr-4";
+                mainContent.innerHTML = `
+                    <h3 class="text-xl font-semibold text-indigo-800 mb-2">${item.title}</h3>
+                    <p class="text-gray-600">${item.description}</p>
+                `;
+                contentWrapper.appendChild(mainContent);
+
+                const separator = document.createElement('div');
+                separator.className = "card-separator my-4 md:mx-4 md:my-0";
+                contentWrapper.appendChild(separator);
+
+                const characteristics = document.createElement('div');
+                characteristics.className = "w-full md:w-1/4 min-w-max text-left md:text-right text-sm text-gray-500 flex-none";
+                const characteristicsHtml = filterProperties.filter(prop => item[prop]).map(prop => `
+                    <div>
+                        <span class="font-medium">${labelMap[prop] || prop.charAt(0).toUpperCase() + prop.slice(1)}</span> : ${item[prop]}
+                    </div>
+                `).join('');
+                characteristics.innerHTML = characteristicsHtml;
+                contentWrapper.appendChild(characteristics);
+                
+                card.appendChild(contentWrapper);
+                
+                return card;
+            }
+
+            async function renderCategory(categoryKey) {
+                suggestionFormContainer.classList.add('hidden');
+                messageArea.classList.add('hidden');
+                contentContainer.innerHTML = '';
+                filtersContainer.innerHTML = '';
+                controlsContainer.classList.remove('hidden');
+                contentContainer.classList.remove('hidden');
+                currentCategory = categoryKey;
+                
+                searchInput.value = '';
+
+                contentContainer.innerHTML = `
+                    <div class="col-span-full text-center text-gray-500 text-xl mt-12">
+                        <p>Chargement des ressources...</p>
+                    </div>
+                `;
+
+                try {
+                    const q = collection(db, `/artifacts/${appId}/public/data/${categoryKey}`);
+                    const querySnapshot = await getDocs(q);
+                    
+                    const items = [];
+                    querySnapshot.forEach(doc => {
+                        items.push(doc.data());
+                    });
+
+                    contentContainer.innerHTML = '';
+
+                    if (items.length === 0) {
+                         contentContainer.innerHTML = `
+                            <div class="col-span-full text-center text-gray-500 text-xl mt-12">
+                                <p>Aucune ressource trouvée pour cette catégorie.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    const filterProperties = Object.keys(items[0]).filter(key => ['platform', 'struggle', 'network', 'type', 'publisher'].includes(key));
+                    
+                    filterProperties.forEach(prop => {
+                        const uniqueFilters = [...new Set(items.map(item => item[prop]))].sort();
+                        
+                        const filterGroup = document.createElement('div');
+                        filterGroup.className = 'flex flex-col';
+                        
+                        const filterLabel = document.createElement('label');
+                        filterLabel.className = 'font-semibold text-gray-700 mb-1 text-sm';
+                        filterLabel.textContent = labelMap[prop] || (prop.charAt(0).toUpperCase() + prop.slice(1));
+                        filterGroup.appendChild(filterLabel);
+                        
+                        const filterSelect = document.createElement('select');
+                        filterSelect.className = 'p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors';
+                        filterSelect.setAttribute('data-filter-property', prop);
+                        filterSelect.addEventListener('change', filterContent);
+
+                        const allOption = document.createElement('option');
+                        allOption.value = 'all';
+                        allOption.textContent = 'Tous';
+                        filterSelect.appendChild(allOption);
+
+                        uniqueFilters.forEach(filterValue => {
+                            const option = document.createElement('option');
+                            option.value = filterValue.toLowerCase();
+                            option.textContent = filterValue;
+                            filterSelect.appendChild(option);
+                        });
+
+                        filterGroup.appendChild(filterSelect);
+                        filtersContainer.appendChild(filterGroup);
+                    });
+
+                    items.forEach(item => {
+                        contentContainer.appendChild(createCard(item, filterProperties));
+                    });
+                } catch (e) {
+                    console.error("Erreur lors du chargement des ressources : ", e);
+                    contentContainer.innerHTML = `
+                        <div class="col-span-full text-center text-red-500 text-xl mt-12">
+                            <p>Une erreur est survenue lors du chargement des données.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            function filterContent() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const cards = contentContainer.querySelectorAll('.card');
+                const filterSelects = filtersContainer.querySelectorAll('select');
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('h3').textContent.toLowerCase();
+                    const description = card.querySelector('p').textContent.toLowerCase();
+                    
+                    const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+                    
+                    let matchesFilters = true;
+                    filterSelects.forEach(select => {
+                        const prop = select.getAttribute('data-filter-property');
+                        const filterValue = select.value;
+
+                        if (filterValue !== 'all') {
+                            const cardFilterValue = card.getAttribute(`data-${prop}`);
+                            if (!cardFilterValue || cardFilterValue !== filterValue) {
+                                matchesFilters = false;
+                            }
+                        }
+                    });
+                    
+                    if (matchesSearch && matchesFilters) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            function showProposeForm() {
+                categoryButtons.forEach(btn => btn.classList.remove('active-button'));
+                controlsContainer.classList.add('hidden');
+                contentContainer.classList.add('hidden');
+                messageArea.classList.add('hidden');
+                
+                suggestionFormContainer.classList.remove('hidden');
+                suggestionForm.reset();
+            }
+
+            async function handleSuggestionSubmit(event) {
+                event.preventDefault();
+
+                const title = document.getElementById('suggestion-title').value;
+                const description = document.getElementById('suggestion-description').value;
+                const url = document.getElementById('suggestion-url').value;
+                const category = document.getElementById('suggestion-category').value;
+
+                const newSuggestion = {
+                    title,
+                    description,
+                    url,
+                    category,
+                    createdAt: serverTimestamp(),
+                    status: 'pending'
+                };
+
+                try {
+                    const suggestionsCollection = collection(db, `/artifacts/${appId}/public/data/suggestions`);
+                    await addDoc(suggestionsCollection, newSuggestion);
+                    showMessage('Votre proposition a été envoyée avec succès ! Elle sera examinée prochainement.', 'success');
+                    suggestionForm.reset();
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    showMessage("Une erreur s'est produite lors de l'envoi de la proposition. Veuillez réessayer.", 'error');
+                }
+            }
+
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    categoryButtons.forEach(btn => btn.classList.remove('active-button'));
+                    button.classList.add('active-button');
+                    
+                    const categoryKey = button.id.replace('btn-', '');
+                    renderCategory(categoryKey);
+                });
+            });
+
+            proposeButton.addEventListener('click', showProposeForm);
+            searchInput.addEventListener('keyup', filterContent);
+            suggestionForm.addEventListener('submit', handleSuggestionSubmit);
+
+            window.onload = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Erreur d'authentification :", error);
+                }
+            };
+        }
     </script>
 </body>
 </html>

@@ -871,22 +871,19 @@
 
     // Fonction pour générer dynamiquement les champs de filtre d'une ressource
     function renderResourceFilterFields(resourceData, targetElement) {
-        targetElement.innerHTML = ''; // Nettoyer les anciens champs
-        if (resourceData.category && categoryConfigData[resourceData.category]) {
-            const filters = categoryConfigData[resourceData.category].filters;
-            if (filters) {
-                for (const filterId in filters) {
-                    const filterLabel = filters[filterId];
-                    const fieldValue = resourceData.filters ? (resourceData.filters[filterId] || '') : '';
-                    const filterGroup = document.createElement('div');
-                    filterGroup.className = 'modal-form-group';
-                    filterGroup.innerHTML = `
-                        <label for="edit-resource-${filterId}">${filterLabel}</label>
-                        <input type="text" id="edit-resource-${filterId}" data-filter-id="${filterId}" value="${fieldValue}">
-                    `;
-                    targetElement.appendChild(filterGroup);
-                }
-            }
+        targetElement.innerHTML = '';
+        const filtersArray = categoryConfigData[resourceData.category];
+        if (Array.isArray(filtersArray)) {
+            filtersArray.forEach(filterObj => {
+                const fieldValue = resourceData.filters ? (resourceData.filters[filterObj.id] || '') : '';
+                const filterGroup = document.createElement('div');
+                filterGroup.className = 'modal-form-group';
+                filterGroup.innerHTML = `
+                    <label for="edit-resource-${filterObj.id}">${filterObj.label}</label>
+                    <input type="text" id="edit-resource-${filterObj.id}" data-filter-id="${filterObj.id}" value="${fieldValue}">
+                `;
+                targetElement.appendChild(filterGroup);
+            });
         }
     }
 
@@ -902,7 +899,7 @@
         for (const key in categoryConfigData) {
             const option = document.createElement('option');
             option.value = key;
-            option.textContent = categoryConfigData[key].label;
+            option.textContent = key; // Utilise la clé comme label
             editResourceCategory.appendChild(option);
         }
         editResourceCategory.value = resourceData.category;
@@ -975,10 +972,11 @@
 
     // Fonction pour créer un élément de carte pour une catégorie
     function createCategoryConfigCard(key, data) {
+        const label = key; // Utilise la clé comme label
         const card = document.createElement('div');
         card.className = 'category-config-card';
         card.innerHTML = `
-            <h3 class="font-bold text-lg text-indigo-700">${data.label}</h3>
+            <h3 class="font-bold text-lg text-indigo-700">${label}</h3>
             <p class="text-sm text-gray-600">ID: ${key}</p>
             <div class="actions mt-4">
                 <button class="btn-edit-category bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition-colors duration-200">Gérer les filtres</button>
@@ -1025,27 +1023,29 @@
         e.preventDefault();
         const categoryName = newCategoryNameInput.value.trim();
         const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
-        const filters = {};
+        const filters = [];
         const filterItems = newCategoryFilterPropertiesContainer.querySelectorAll('.filter-property-item');
         filterItems.forEach(item => {
             const filterId = item.querySelector('.filter-id-input').value;
             const filterLabel = item.querySelector('.filter-label-input').value;
             if (filterId && filterLabel) {
-                filters[filterId] = filterLabel;
+                filters.push({
+                    id: filterId,
+                    label: filterLabel,
+                    placeholder: "",
+                    type: "text"
+                });
             }
         });
 
-        if (!categoryId || Object.keys(filters).length === 0) {
+        if (!categoryId || filters.length === 0) {
             showGeneralMessage("Le nom de la catégorie et au moins un filtre sont requis.", 'error');
             return;
         }
 
         const updatedConfig = {
             ...categoryConfigData,
-            [categoryId]: {
-                label: categoryName,
-                filters: filters
-            }
+            [categoryId]: filters
         };
         
         try {
@@ -1061,24 +1061,23 @@
 
     // Gérer l'édition d'une catégorie
     function handleEditCategory(key, data) {
-        editCategoryName.textContent = data.label;
+        editCategoryName.textContent = key;
         editCategoryKeyInput.value = key;
         editCategoryFilterPropertiesList.innerHTML = '';
-        if (data.filters) {
-            for (const filterId in data.filters) {
-                const filterLabel = data.filters[filterId];
+        if (Array.isArray(data)) {
+            data.forEach(filterObj => {
                 const newItem = document.createElement('div');
                 newItem.className = 'filter-property-item';
                 newItem.innerHTML = `
-                    <input type="text" value="${filterId}" class="filter-id-input w-1/2" required>
-                    <input type="text" value="${filterLabel}" class="filter-label-input w-1/2" required>
+                    <input type="text" value="${filterObj.id}" class="filter-id-input w-1/2" required>
+                    <input type="text" value="${filterObj.label}" class="filter-label-input w-1/2" required>
                     <button type="button" class="text-white bg-red-600 px-2 py-1 rounded">
                         &times;
                     </button>
                 `;
                 newItem.querySelector('button').addEventListener('click', () => newItem.remove());
                 editCategoryFilterPropertiesList.appendChild(newItem);
-            }
+            });
         }
         editCategoryModal.classList.add('show');
     }
@@ -1087,17 +1086,22 @@
     editCategoryForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = editCategoryKeyInput.value;
-        const filters = {};
+        const filters = [];
         const filterItems = editCategoryFilterPropertiesList.querySelectorAll('.filter-property-item');
         filterItems.forEach(item => {
             const filterId = item.querySelector('.filter-id-input').value;
             const filterLabel = item.querySelector('.filter-label-input').value;
             if (filterId && filterLabel) {
-                filters[filterId] = filterLabel;
+                filters.push({
+                    id: filterId,
+                    label: filterLabel,
+                    placeholder: "",
+                    type: "text"
+                });
             }
         });
 
-        const updatedConfig = { ...categoryConfigData, [id]: { ...categoryConfigData[id], filters: filters } };
+        const updatedConfig = { ...categoryConfigData, [id]: filters };
 
         try {
             await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
@@ -1112,7 +1116,7 @@
     // Gérer la suppression de catégorie
     deleteCategoryButton.addEventListener('click', async () => {
         const id = editCategoryKeyInput.value;
-        if (confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${categoryConfigData[id].label}" ?`)) {
+        if (confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${id}" ?`)) {
             const updatedConfig = { ...categoryConfigData };
             delete updatedConfig[id];
 

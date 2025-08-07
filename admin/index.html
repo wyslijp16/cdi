@@ -277,7 +277,7 @@
             background-color: white;
             padding: 2rem;
             border-radius: 0.75rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             max-width: 400px;
             width: 100%;
         }
@@ -382,6 +382,22 @@
                         <div class="modal-form-group">
                             <label for="new-category-name-input">Nom de la Catégorie (ex: 'Livres')</label>
                             <input type="text" id="new-category-name-input" class="w-full" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-label-input">Label de la Catégorie</label>
+                            <input type="text" id="new-category-label-input" class="w-full" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-description-input">Description de la Catégorie</label>
+                            <textarea id="new-category-description-input" class="w-full" rows="2"></textarea>
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-color-input">Couleur de la Catégorie</label>
+                            <input type="color" id="new-category-color-input" class="w-full">
+                        </div>
+                        <div class="modal-form-group">
+                            <label for="new-category-order-input">Ordre d'affichage</label>
+                            <input type="number" id="new-category-order-input" class="w-full" min="0">
                         </div>
                         <div class="modal-form-group">
                             <label for="new-category-filter-properties">Propriétés de Filtre</label>
@@ -553,6 +569,10 @@
     const editCategoryForm = document.getElementById('edit-category-form');
     const editCategoryName = document.getElementById('edit-category-name');
     const editCategoryKeyInput = document.getElementById('edit-category-key-input');
+    const editCategoryLabelInput = document.getElementById('edit-category-label-input');
+    const editCategoryDescriptionInput = document.getElementById('edit-category-description-input');
+    const editCategoryColorInput = document.getElementById('edit-category-color-input');
+    const editCategoryOrderInput = document.getElementById('edit-category-order-input');
     const editCategoryFilterPropertiesList = document.getElementById('edit-category-filter-properties-list');
     const addEditFilterPropertyButton = document.getElementById('add-edit-filter-property-button');
     const deleteCategoryButton = document.getElementById('delete-category-button');
@@ -562,6 +582,10 @@
     const categoriesConfigList = document.getElementById('categories-config-list');
     const addCategoryForm = document.getElementById('add-category-form');
     const newCategoryNameInput = document.getElementById('new-category-name-input');
+    const newCategoryLabelInput = document.getElementById('new-category-label-input');
+    const newCategoryDescriptionInput = document.getElementById('new-category-description-input');
+    const newCategoryColorInput = document.getElementById('new-category-color-input');
+    const newCategoryOrderInput = document.getElementById('new-category-order-input');
     const newCategoryFilterPropertiesContainer = document.getElementById('new-category-filter-properties-container');
     const addNewFilterPropertyButton = document.getElementById('add-new-filter-property-button');
 
@@ -1063,9 +1087,14 @@
     function handleEditCategory(key, data) {
         editCategoryName.textContent = key;
         editCategoryKeyInput.value = key;
+        editCategoryLabelInput.value = data.label || '';
+        editCategoryDescriptionInput.value = data.description || '';
+        editCategoryColorInput.value = data.color || '#000000';
+        editCategoryOrderInput.value = data.order || '';
+
         editCategoryFilterPropertiesList.innerHTML = '';
-        if (Array.isArray(data)) {
-            data.forEach(filterObj => {
+        if (Array.isArray(data.filters)) {
+            data.filters.forEach(filterObj => {
                 const newItem = document.createElement('div');
                 newItem.className = 'filter-property-item';
                 newItem.innerHTML = `
@@ -1086,6 +1115,10 @@
     editCategoryForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = editCategoryKeyInput.value;
+        const label = editCategoryLabelInput.value;
+        const description = editCategoryDescriptionInput.value;
+        const color = editCategoryColorInput.value;
+        const order = editCategoryOrderInput.value;
         const filters = [];
         const filterItems = editCategoryFilterPropertiesList.querySelectorAll('.filter-property-item');
         filterItems.forEach(item => {
@@ -1101,7 +1134,7 @@
             }
         });
 
-        const updatedConfig = { ...categoryConfigData, [id]: filters };
+        const updatedConfig = { ...categoryConfigData, [id]: { label, description, color, order, filters } };
 
         try {
             await setDoc(doc(db, 'appConfig', 'categoriesAndFilters'), updatedConfig);
